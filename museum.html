@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>ГМИ СПб — Брендинг · WwolDEM</title>
+  <meta name="description" content="Брендинг Государственного музея истории Санкт-Петербурга: логотип, палитра, типографика, носители. Кейс WwolDEM." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       TOKENS
+       ============================================================ */
+    :root {
+      --m-night: #1B2A4A;
+      --m-gold:  #C9A84C;
+      --m-fog:   #8A9BB5;
+      --m-light: #F2F4F8;
+      --m-white: #FFFFFF;
+      --m-text:  #1B2A4A;
+
+      --maxw: 1180px;
+      --pad:  48px;
+
+      --cg:    'Cormorant Garamond', serif;
+      --inter: 'Inter', sans-serif;
+      --ease:  cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ============================================================
+       RESET / BASE
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--m-night);
+      color: var(--m-white);
+      font-family: var(--inter);
+      font-weight: 400;
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    @media (pointer: fine) { body, body * { cursor: none !important; } }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .container { position: relative; z-index: 1; width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad); }
+    .section { padding: 120px 0; position: relative; z-index: 1; }
+
+    /* лейбл секции */
+    .lbl { font-family: var(--inter); font-weight: 500; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--m-gold); }
+    .sec-h { font-family: var(--cg); font-weight: 300; font-size: clamp(36px, 4vw, 56px); line-height: 1.1; margin-top: 20px; }
+    .sec-h--italic { font-style: italic; }
+
+    /* ============================================================
+       КУРСОР — ромб + координаты
+       ============================================================ */
+    .cursor { position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none; will-change: transform; display: none; }
+    .cursor__d { position: absolute; width: 7px; height: 7px; background: var(--m-gold); transform: translate(-50%, -50%) rotate(45deg); }
+    .cursor__xy { position: absolute; left: 16px; top: 6px; font-family: var(--inter); font-size: 9px; color: var(--m-fog); white-space: nowrap; }
+    .cursor__xy span { display: block; }
+
+    /* ============================================================
+       NAV
+       ============================================================ */
+    .nav {
+      position: fixed; top: 0; left: 0; width: 100%; height: 56px; z-index: 100;
+      background: rgba(27,42,74,0.95);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+    .nav__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .nav a, .nav__center, .nav__status { font-family: var(--inter); font-weight: 400; color: var(--m-fog); }
+    .nav a { font-size: 11px; letter-spacing: 0.05em; transition: color 0.2s ease; }
+    .nav a:hover { color: var(--m-white); }
+    .nav__center { font-size: 11px; letter-spacing: 0.2em; }
+    .nav__status { font-size: 10px; letter-spacing: 0.05em; white-space: nowrap; }
+    .nav__status .dot { color: var(--m-gold); }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; padding: 100px var(--pad); }
+    .hero__octagon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 600px; max-width: 90vw; opacity: 0.04; pointer-events: none; z-index: 0; }
+    .hero__inner { position: relative; z-index: 1; }
+    .hero__eyebrow { font-family: var(--inter); font-weight: 500; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--m-gold); display: block; margin-bottom: 40px; }
+    .hero__logo { width: 340px; max-width: 82%; height: auto; margin: 0 auto 48px; }
+    .hero__title { font-family: var(--cg); font-weight: 300; font-style: italic; font-size: clamp(48px, 6vw, 80px); line-height: 1.1; color: var(--m-white); }
+    .hero__line { width: 80px; height: 1px; background: var(--m-gold); margin: 40px auto; }
+    .hero__metrics { font-family: var(--inter); font-weight: 300; font-size: 13px; letter-spacing: 0.1em; color: var(--m-fog); }
+    .hero__scroll { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); font-family: var(--inter); font-size: 12px; color: var(--m-fog); z-index: 1; animation: bob 2s ease-in-out infinite; }
+    @keyframes bob { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+
+    /* ============================================================
+       ДВЕ КОЛОНКИ
+       ============================================================ */
+    .two { display: grid; gap: 64px; align-items: start; }
+    .two--4060 { grid-template-columns: 40% 60%; }
+    .on-light { background: var(--m-light); color: var(--m-text); }
+    .on-light .lbl { color: var(--m-gold); }
+    .on-night { background: var(--m-night); }
+
+    .about__text p { font-family: var(--inter); font-weight: 300; font-size: 16px; line-height: 1.9; color: var(--m-text); opacity: 0.7; margin-bottom: 24px; max-width: 54ch; }
+    .tags { font-family: var(--inter); font-size: 11px; letter-spacing: 0.1em; color: var(--m-fog); }
+
+    /* ============================================================
+       ЛОГОТИП (блок 2)
+       ============================================================ */
+    .logo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+    .logo-box { padding: 40px; display: flex; align-items: center; justify-content: center; }
+    .logo-box--dark { background: #162338; }
+    .logo-box--light { background: #F2F4F8; }
+    .logo-box img { max-width: 420px; width: 100%; height: auto; }
+    .logo-cap { font-family: var(--inter); font-size: 10px; color: var(--m-fog); margin-top: 14px; letter-spacing: 0.05em; }
+    .rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; }
+    .rule { border-top: 1px solid rgba(201,168,76,0.2); padding-top: 16px; font-family: var(--inter); font-weight: 300; font-size: 13px; color: var(--m-fog); line-height: 1.6; }
+    .rule b { display: block; font-weight: 500; color: var(--m-white); margin-bottom: 6px; }
+
+    /* ============================================================
+       ЦВЕТ (блок 3)
+       ============================================================ */
+    .palette { display: flex; margin-top: 48px; }
+    .swatch { flex: 1; height: 200px; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; }
+    .swatch__name { font-family: var(--cg); font-style: italic; font-weight: 400; font-size: 14px; }
+    .swatch__hex { font-family: var(--inter); font-weight: 300; font-size: 11px; margin-top: 4px; }
+    .swatch__role { font-family: var(--inter); font-weight: 500; font-size: 9px; letter-spacing: 0.1em; margin-top: 8px; opacity: 0.8; }
+    .sw-night { background: #1B2A4A; color: #fff; }
+    .sw-white { background: #FFFFFF; color: var(--m-text); border: 1px solid #E0E0E0; }
+    .sw-gold  { background: #C9A84C; color: #fff; }
+    .sw-fog   { background: #8A9BB5; color: #fff; }
+    .sw-light { background: #F2F4F8; color: var(--m-text); }
+
+    /* ============================================================
+       ШРИФТЫ (блок 4)
+       ============================================================ */
+    .fonts { margin-top: 48px; }
+    .font-row { padding: 48px 0; border-top: 1px solid rgba(201,168,76,0.15); }
+    .font-row:first-child { border-top: none; }
+    .font-row__lbl { font-family: var(--inter); font-size: 10px; letter-spacing: 0.1em; color: var(--m-fog); }
+    .font-row__demo { color: var(--m-white); font-size: 72px; line-height: 1; margin: 16px 0; }
+    .font-row__demo--cg { font-family: var(--cg); font-weight: 300; }
+    .font-row__demo--inter { font-family: var(--inter); font-weight: 300; }
+    .font-row__name { font-family: var(--inter); font-weight: 500; font-size: 14px; color: var(--m-white); }
+    .font-row__desc { font-family: var(--inter); font-weight: 300; font-size: 13px; color: var(--m-fog); margin-top: 8px; line-height: 1.6; }
+
+    /* ============================================================
+       НОСИТЕЛИ (блок 5)
+       ============================================================ */
+    .carriers { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 48px; }
+    .carrier { padding: 0 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .carrier + .carrier { border-left: 1px solid rgba(27,42,74,0.15); }
+    .carrier__cap { font-family: var(--cg); font-style: italic; font-size: 16px; color: var(--m-text); margin-top: 28px; }
+    .carrier__desc { font-family: var(--inter); font-weight: 300; font-size: 13px; color: var(--m-fog); margin-top: 6px; line-height: 1.5; }
+
+    .av-circle { width: 200px; height: 200px; border-radius: 50%; background: var(--m-night); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .av-circle img { width: 175px; }
+
+    .biz { width: 280px; height: 160px; background: var(--m-night); border: 1px solid rgba(201,168,76,0.3); padding: 22px; display: flex; flex-direction: column; justify-content: space-between; }
+    .biz__top { display: flex; align-items: center; gap: 16px; }
+    .biz__top img { width: 64px; }
+    .biz__top span { font-family: var(--inter); font-weight: 300; font-size: 12px; color: #fff; line-height: 1.3; }
+    .biz__line { height: 1px; background: var(--m-gold); margin: 0 0 6px; }
+    .biz__role { font-family: var(--cg); font-style: italic; font-size: 14px; color: var(--m-gold); }
+
+    .merch { width: 200px; height: 240px; background: #162338; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+    .merch img { width: 140px; }
+    .merch span { font-family: var(--inter); font-weight: 300; font-size: 10px; letter-spacing: 0.1em; color: var(--m-fog); text-align: center; line-height: 1.5; }
+
+    /* ============================================================
+       СКАЧАТЬ БРЕНДБУК
+       ============================================================ */
+    .download {
+      background: #162338;
+      border-top: 1px solid rgba(201,168,76,0.2);
+      padding: 100px 0;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .download__inner { max-width: 600px; margin: 0 auto; }
+    .download__label { font-family: var(--inter); font-weight: 500; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--m-gold); }
+    .download__title { font-family: var(--cg); font-weight: 300; font-style: italic; font-size: clamp(36px, 4vw, 56px); color: var(--m-white); margin-top: 16px; line-height: 1.1; }
+    .download__desc { font-family: var(--inter); font-weight: 300; font-size: 14px; color: var(--m-fog); margin-top: 16px; line-height: 1.7; }
+    .download__line { width: 60px; height: 1px; background: var(--m-gold); margin: 32px auto; }
+    .btn-download {
+      display: inline-block;
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.5);
+      border-radius: 0;
+      color: var(--m-gold);
+      font-family: var(--inter);
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      padding: 14px 48px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    .btn-download:hover { background: var(--m-gold); color: var(--m-night); }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .footer { background: var(--m-night); border-top: 2px solid rgba(201,168,76,0.3); padding: 60px 0; position: relative; z-index: 1; }
+    .footer__grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; align-items: start; }
+    .footer__name { font-family: var(--cg); font-style: italic; font-weight: 400; font-size: 20px; color: var(--m-white); }
+    .footer__copy { font-family: var(--inter); font-weight: 300; font-size: 11px; color: var(--m-fog); margin-top: 8px; }
+    .footer__center { font-family: var(--inter); font-weight: 300; font-size: 12px; color: var(--m-fog); text-align: center; line-height: 1.8; }
+    .footer__right { text-align: right; }
+    .footer__right a { font-family: var(--inter); font-size: 11px; color: var(--m-fog); transition: color 0.2s ease; }
+    .footer__right a:hover { color: var(--m-white); }
+
+    /* ============================================================
+       SCROLL-REVEAL
+       ============================================================ */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.8s var(--ease), transform 0.8s var(--ease); }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ============================================================
+       PAGE TRANSITIONS
+       ============================================================ */
+    body { opacity: 1; transition: opacity 0.4s ease; }
+    body.page-exit { opacity: 0; pointer-events: none; }
+    .transition-overlay { position: fixed; inset: 0; z-index: 99999; pointer-events: none; opacity: 0; background: #1B2A4A; transition: opacity 0.25s ease; }
+    .transition-overlay.active { opacity: 1; pointer-events: all; }
+    /* поэлементное появление hero */
+    @keyframes ptFadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    .hero__inner > * { opacity: 0; animation: ptFadeUp 0.6s ease forwards; }
+    .hero__inner > *:nth-child(1) { animation-delay: 0.10s; }
+    .hero__inner > *:nth-child(2) { animation-delay: 0.22s; }
+    .hero__inner > *:nth-child(3) { animation-delay: 0.34s; }
+    .hero__inner > *:nth-child(4) { animation-delay: 0.46s; }
+    .hero__inner > *:nth-child(5) { animation-delay: 0.58s; }
+
+    /* ============================================================
+       АДАПТИВ
+       ============================================================ */
+    @media (max-width: 768px) {
+      :root { --pad: 24px; }
+      .section { padding: 80px 0; }
+      .two--4060 { grid-template-columns: 1fr; gap: 32px; }
+      .logo-grid { grid-template-columns: 1fr; }
+      .rules { grid-template-columns: 1fr; gap: 24px; }
+      .palette { flex-direction: column; }
+      .swatch { flex: none; width: 100%; height: 96px; }
+      .font-row__demo { font-size: 56px; }
+      .carriers { grid-template-columns: 1fr; gap: 48px; }
+      .carrier { padding: 0; }
+      .carrier + .carrier { border-left: none; border-top: 1px solid rgba(27,42,74,0.15); padding-top: 48px; }
+      .footer__grid { grid-template-columns: 1fr; gap: 24px; text-align: left; }
+      .footer__center, .footer__right { text-align: left; }
+      .nav__center { display: none; }
+      .nav__status { font-size: 9px; }
+      .container { padding: 0 20px; }
+      .cursor { display: none !important; }
+      body, body * { cursor: auto !important; }
+      .hero { min-height: 100svh; padding-top: 100px; }
+      .hero__logo { width: 220px; }
+    }
+    @media (max-width: 480px) {
+      .swatch { height: 84px; }
+      .hero__title { font-size: clamp(28px, 8vw, 40px); }
+      .hero__logo { width: 180px; }
+    }
+
+    /* ============================================================
+       PREFERS-REDUCED-MOTION
+       ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      .hero__inner > * { opacity: 1 !important; }
+      .cursor { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- курсор-ромб -->
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <span class="cursor__d"></span>
+    <span class="cursor__xy"><span id="curX">X: 0</span><span id="curY">Y: 0</span></span>
+  </div>
+
+  <!-- ========================================================
+       NAV
+       ======================================================== -->
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a href="index.html">← WwolDEM</a>
+      <div class="nav__center">МУЗЕЙ ИСТОРИИ САНКТ-ПЕТЕРБУРГА</div>
+      <div class="nav__status"><span class="dot">●</span> БРЕНДИНГ · 2026</div>
+    </div>
+  </nav>
+
+  <!-- ========================================================
+       HERO
+       ======================================================== -->
+  <header class="hero">
+    <svg class="hero__octagon" viewBox="0 0 100 100" aria-hidden="true">
+      <polygon points="30,2 70,2 98,30 98,70 70,98 30,98 2,70 2,30" fill="none" stroke="#C9A84C" stroke-width="0.5" />
+    </svg>
+    <div class="hero__inner">
+      <span class="hero__eyebrow">Петропавловская крепость · 1703</span>
+      <img class="hero__logo" src="assets/museum/logo-white.png" alt="ГМИ — Музей истории Санкт-Петербурга" />
+      <h1 class="hero__title">Три века истории —<br />один знак</h1>
+      <div class="hero__line"></div>
+      <div class="hero__metrics">Брендинг · Логотип · Брендбук</div>
+    </div>
+    <a href="#about" class="hero__scroll" aria-label="вниз">↓</a>
+  </header>
+
+  <!-- ========================================================
+       01 — О ПРОЕКТЕ
+       ======================================================== -->
+  <section class="section on-light" id="about">
+    <div class="container two two--4060">
+      <div class="reveal">
+        <span class="lbl">01 — О проекте</span>
+        <h2 class="sec-h" style="color:var(--m-text);">Архитектура<br />как символ</h2>
+      </div>
+      <div class="about__text reveal">
+        <p>
+          Государственный музей истории Санкт-Петербурга хранит три века
+          городской истории. Задача — создать знак, который отражает
+          эту глубину.
+        </p>
+        <p>
+          Форма логотипа основана на плане Петропавловской крепости —
+          звёздчатом бастионе 1703 года. Монограмма ГМИ вписана
+          в этот исторический контур.
+        </p>
+        <p class="tags">брендинг · логотип · айдентика</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       02 — ЗНАК
+       ======================================================== -->
+  <section class="section on-night">
+    <div class="container">
+      <div class="reveal">
+        <span class="lbl">02 — Знак</span>
+        <h2 class="sec-h sec-h--italic" style="color:var(--m-white);">Знак крепости<br />с монограммой ГМИ</h2>
+      </div>
+      <div class="logo-grid">
+        <div class="reveal">
+          <div class="logo-box logo-box--dark"><img src="assets/museum/logo-white.png" alt="Логотип ГМИ — основной вариант" /></div>
+          <div class="logo-cap">основной вариант · на тёмном</div>
+        </div>
+        <div class="reveal">
+          <div class="logo-box logo-box--light"><img src="assets/museum/logo-light.svg" alt="Логотип ГМИ — на светлом" /></div>
+          <div class="logo-cap">вариант · на светлом</div>
+        </div>
+      </div>
+      <div class="rules">
+        <div class="rule reveal"><b>Охранное поле</b>Не менее высоты монограммы с каждой стороны</div>
+        <div class="rule reveal"><b>Минимальный размер</b>80 мм в печати · 24 px на экране</div>
+        <div class="rule reveal"><b>Недопустимо</b>Деформация · смена цвета · тень · наклон</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       03 — ПАЛИТРА
+       ======================================================== -->
+  <section class="section on-light">
+    <div class="container">
+      <div class="reveal">
+        <span class="lbl">03 — Палитра</span>
+        <h2 class="sec-h" style="color:var(--m-text);">Пять цветов</h2>
+      </div>
+      <div class="palette reveal">
+        <div class="swatch sw-night">
+          <div class="swatch__name">Петербургская ночь</div>
+          <div class="swatch__hex">#1B2A4A</div>
+          <div class="swatch__role">ОСНОВНОЙ</div>
+        </div>
+        <div class="swatch sw-white">
+          <div class="swatch__name">Белый</div>
+          <div class="swatch__hex">#FFFFFF</div>
+          <div class="swatch__role">ТЕКСТ · ФОН</div>
+        </div>
+        <div class="swatch sw-gold">
+          <div class="swatch__name">Золото шпиля</div>
+          <div class="swatch__hex">#C9A84C</div>
+          <div class="swatch__role">АКЦЕНТ</div>
+        </div>
+        <div class="swatch sw-fog">
+          <div class="swatch__name">Туман Невы</div>
+          <div class="swatch__hex">#8A9BB5</div>
+          <div class="swatch__role">ДОПОЛНИТЕЛЬНЫЙ</div>
+        </div>
+        <div class="swatch sw-light">
+          <div class="swatch__name">Светлый фон</div>
+          <div class="swatch__hex">#F2F4F8</div>
+          <div class="swatch__role">ФОН</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       04 — ТИПОГРАФИКА
+       ======================================================== -->
+  <section class="section on-night">
+    <div class="container">
+      <div class="reveal">
+        <span class="lbl">04 — Типографика</span>
+        <h2 class="sec-h sec-h--italic" style="color:var(--m-white);">Две гарнитуры</h2>
+      </div>
+      <div class="fonts">
+        <div class="font-row reveal">
+          <div class="font-row__lbl">SERIF · DISPLAY</div>
+          <div class="font-row__demo font-row__demo--cg">Аа</div>
+          <div class="font-row__name">Cormorant Garamond</div>
+          <div class="font-row__desc">Заголовки · монограммы · элегантные подписи<br />Light 300 · Regular 400 · Medium 500 · Italic</div>
+        </div>
+        <div class="font-row reveal">
+          <div class="font-row__lbl">SANS · TEXT &amp; UI</div>
+          <div class="font-row__demo font-row__demo--inter">Аа</div>
+          <div class="font-row__name">Inter</div>
+          <div class="font-row__desc">Основной текст · метки · навигация · цифры<br />Light 300 · Regular 400 · Medium 500</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       05 — НОСИТЕЛИ
+       ======================================================== -->
+  <section class="section on-light">
+    <div class="container">
+      <div class="reveal">
+        <span class="lbl">05 — Носители</span>
+        <h2 class="sec-h" style="color:var(--m-text);">Знак в работе</h2>
+      </div>
+      <div class="carriers reveal">
+        <div class="carrier">
+          <div class="av-circle"><img src="assets/museum/logo-white.png" alt="Аватар ГМИ" /></div>
+          <div class="carrier__cap">Аватар</div>
+          <div class="carrier__desc">Профили в соцсетях и мессенджерах</div>
+        </div>
+        <div class="carrier">
+          <div class="biz">
+            <div class="biz__top">
+              <img src="assets/museum/logo-white.png" alt="" />
+              <span>Музей истории<br />Санкт-Петербурга</span>
+            </div>
+            <div>
+              <div class="biz__line"></div>
+              <div class="biz__role">Хранитель фонда</div>
+            </div>
+          </div>
+          <div class="carrier__cap">Визитная карточка</div>
+          <div class="carrier__desc">90 × 50 мм</div>
+        </div>
+        <div class="carrier">
+          <div class="merch">
+            <img src="assets/museum/logo-white.png" alt="Мерч ГМИ" />
+            <span>МУЗЕЙ ИСТОРИИ<br />САНКТ-ПЕТЕРБУРГА</span>
+          </div>
+          <div class="carrier__cap">Мерч</div>
+          <div class="carrier__desc">Фирменная продукция</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       FOOTER
+       ======================================================== -->
+  <!-- ========================================================
+       СКАЧАТЬ БРЕНДБУК
+       ======================================================== -->
+  <section class="download">
+    <div class="container">
+      <div class="download__inner reveal">
+        <span class="download__label">Руководство по фирменному стилю</span>
+        <h2 class="download__title">Скачать брендбук</h2>
+        <p class="download__desc">Полное руководство по фирменному стилю Музея истории Санкт-Петербурга.<br />7 разделов · логотип · цвет · шрифты · носители</p>
+        <div class="download__line"></div>
+        <a href="assets/museum/brandbook.pdf" download="ГМИ_СПб_Брендбук_WwolDEM.pdf" class="btn-download">↓ скачать PDF</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       FOOTER
+       ======================================================== -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div>
+        <div class="footer__name">ГМИ СПб</div>
+        <div class="footer__copy">© 2026 — WwolDEM</div>
+        <div class="footer__copy">брендинг · учебный проект</div>
+      </div>
+      <div class="footer__center">
+        Разработано в рамках производственной практики<br />Максит, Москва · 2026
+      </div>
+      <div class="footer__right">
+        <a href="index.html">← Назад на WwolDEM</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    'use strict';
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var finePointer = window.matchMedia('(pointer: fine)').matches;
+
+    // курсор-ромб + координаты
+    (function () {
+      if (!finePointer || reduce) return;
+      var cur = document.getElementById('cursor');
+      var cx = document.getElementById('curX');
+      var cy = document.getElementById('curY');
+      cur.style.display = 'block';
+      addEventListener('mousemove', function (e) {
+        cur.style.transform = 'translate(' + e.clientX + 'px,' + e.clientY + 'px)';
+        cx.textContent = 'X: ' + e.clientX;
+        cy.textContent = 'Y: ' + e.clientY;
+      });
+      document.addEventListener('mouseleave', function () { cur.style.opacity = '0'; });
+      document.addEventListener('mouseenter', function () { cur.style.opacity = ''; });
+    })();
+
+    // scroll-reveal
+    (function () {
+      var items = document.querySelectorAll('.reveal');
+      if (reduce || !('IntersectionObserver' in window)) {
+        items.forEach(function (el) { el.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+        });
+      }, { threshold: 0.1 });
+      items.forEach(function (el) { io.observe(el); });
+    })();
+
+    // === PAGE TRANSITIONS ===
+    (function () {
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A' };
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C' };
+      var overlay = document.createElement('div');
+      overlay.className = 'transition-overlay';
+      overlay.style.background = '#1B2A4A';
+      document.body.appendChild(overlay);
+      var accentBar = document.createElement('div');
+      accentBar.style.cssText = ['position:absolute','bottom:0','left:0','width:0%','height:3px','background:#C9A84C','transition:width 0.4s ease'].join(';');
+      overlay.appendChild(accentBar);
+      function navigateTo(href) {
+        var targetName = href.split('/').pop().split('?')[0] || 'index.html';
+        overlay.style.background = PAGE_COLORS[targetName] || '#0a0a0a';
+        accentBar.style.background = PAGE_ACCENT[targetName] || '#2ec796';
+        overlay.classList.add('active');
+        document.body.classList.add('page-exit');
+        requestAnimationFrame(function () { accentBar.style.width = '100%'; });
+        setTimeout(function () { window.location.href = href; }, 450);
+      }
+      document.addEventListener('click', function (e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        var href = link.getAttribute('href');
+        if (!href) return;
+        if (href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel') || link.hasAttribute('download') || link.getAttribute('target') === '_blank') return;
+        e.preventDefault();
+        navigateTo(href);
+      });
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) { overlay.classList.remove('active'); accentBar.style.width = '0%'; document.body.classList.remove('page-exit'); }
+      });
+    })();
+  </script>
+
+</body>
+</html>
