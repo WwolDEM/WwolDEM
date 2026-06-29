@@ -7,9 +7,9 @@
   <meta name="description" content="WwolDEM (Трифон Костенко) — дизайнер из Москвы. Брендинг, плакаты, веб. Всё начинается с Demo." />
 
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.bunny.net" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.bunny.net/css2?family=Unbounded:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
 
   <style>
     /* ============================================================
@@ -830,6 +830,50 @@
     .oc-blob--small { width: 60px; height: 60px; background: rgba(255,255,255,0.06); left: -10px; bottom: -10px; }
 
     /* ============================================================
+       ЖИВЫЕ САЙТЫ
+       ============================================================ */
+    .live-sites {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 80px 0;
+      position: relative;
+      z-index: 2;
+    }
+    .live-label { font-family: var(--font-ui); font-size: 10px; color: var(--text-muted); }
+    .live-title { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.02em; color: var(--text); margin-top: 16px; }
+    .live-sub { font-family: var(--font-body); font-weight: 300; font-size: 14px; color: var(--text-muted); margin-top: 8px; }
+
+    .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 48px; }
+    .live-card { display: block; text-decoration: none; color: inherit; }
+
+    .live-preview {
+      height: 200px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border: 1px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+    /* ARTiDELO */
+    .lp--artidelo { background: #0D1F18; }
+    .lp-art-title { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: 0.1em; color: #C9A46E; opacity: 0.85; transition: opacity 0.3s ease; }
+    .lp-art-domain { font-family: var(--font-ui); font-size: 9px; color: rgba(201,164,110,0.5); margin-top: 8px; }
+    .lp-art-line { width: 40px; height: 1px; background: #C9A46E; opacity: 0.4; margin-top: 12px; }
+    .live-card:hover .lp--artidelo { border-color: rgba(201,164,110,0.4); }
+    .live-card:hover .lp-art-title { opacity: 1; }
+
+    .live-cat { font-family: var(--font-ui); font-size: 10px; color: var(--accent); margin-top: 20px; }
+    .live-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--text); margin-top: 8px; }
+    .live-desc { font-family: var(--font-body); font-weight: 300; font-size: 13px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; }
+    .live-link { font-family: var(--font-ui); font-size: 10px; color: var(--text-muted); margin-top: 12px; display: inline-block; }
+
+    /* SvetoART — заглушка «в разработке» */
+    .lp--soon { background: #111111; border: 1px dashed rgba(255,255,255,0.1); }
+    .lp-soon-title { font-family: var(--font-ui); font-size: 10px; color: var(--text-muted); }
+    .lp-soon-sub { font-family: var(--font-body); font-weight: 300; font-size: 12px; color: rgba(255,255,255,0.2); margin-top: 8px; }
+    .live-cat--soon { color: rgba(255,255,255,0.2); }
+    .live-name--soon { color: rgba(255,255,255,0.2); }
+    .live-desc--soon { color: rgba(255,255,255,0.15); }
+
+    /* ============================================================
        КОНТАКТЫ
        ============================================================ */
     .contacts {
@@ -990,6 +1034,7 @@
       .about__grid { grid-template-columns: 1fr; gap: 36px; }
       .contacts__grid { grid-template-columns: 1fr; gap: 36px; }
       .other-grid { grid-template-columns: 1fr; }
+      .live-grid { grid-template-columns: 1fr; }
       .card { flex-basis: 80vw; }
       .nav__clock { display: none; }
       .hero__meta { max-width: none; }
@@ -1317,6 +1362,45 @@
           <p class="other-card__desc">Рекламный баннер — фиолетовая палитра, космический стиль</p>
           <span class="other-card__link">Behance ↗</span>
         </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       ЖИВЫЕ САЙТЫ
+       ======================================================== -->
+  <section class="live-sites">
+    <div class="container">
+      <div class="reveal">
+        <span class="live-label">[ живые сайты ]</span>
+        <h2 class="live-title">Сайты в продакшене</h2>
+        <p class="live-sub">Реальные проекты — можно открыть и потрогать</p>
+      </div>
+
+      <div class="live-grid">
+        <!-- ARTiDELO -->
+        <a class="live-card reveal" href="https://artidelo.ru/" target="_blank" rel="noopener">
+          <div class="live-preview lp--artidelo">
+            <span class="lp-art-title">АРТ ДЕЛО</span>
+            <span class="lp-art-domain">artidelo.ru</span>
+            <span class="lp-art-line" aria-hidden="true"></span>
+          </div>
+          <div class="live-cat">веб-дизайн</div>
+          <h3 class="live-name">ARTiDELO</h3>
+          <p class="live-desc">Сайт студии декоративного освещения — тёмная палитра, золотые акценты, Москва</p>
+          <span class="live-link">artidelo.ru ↗</span>
+        </a>
+
+        <!-- SvetoART — заглушка -->
+        <div class="live-card reveal">
+          <div class="live-preview lp--soon">
+            <span class="lp-soon-title">скоро</span>
+            <span class="lp-soon-sub">SvetoART · в разработке</span>
+          </div>
+          <div class="live-cat live-cat--soon">веб-дизайн</div>
+          <h3 class="live-name live-name--soon">SvetoART</h3>
+          <p class="live-desc live-desc--soon">Сайт студии световых решений — в разработке</p>
+        </div>
       </div>
     </div>
   </section>
