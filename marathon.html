@@ -10,9 +10,7 @@
   <meta name="description" content="Серия плакатов по игре Marathon (Bungie, 2026). Graphic retro futurism. Кейс WwolDEM." />
 
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.bunny.net" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.bunny.net/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,700;1,900&family=Share+Tech+Mono&family=Barlow:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.bunny.net" />  <link href="https://fonts.bunny.net/css2?family=Barlow+Condensed:ital,wght@0,700;0,900;1,700;1,900&family=Share+Tech+Mono&family=Barlow:wght@300;400&display=swap" rel="stylesheet" />
 
   <style>
 
@@ -332,6 +330,12 @@
     /* ============================================================
        PREFERS-REDUCED-MOTION
        ============================================================ */
+    /* видимый фокус при навигации с клавиатуры */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--m-orange);
+      outline-offset: 3px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
       .glitch::before, .glitch::after { display: none; }
@@ -657,8 +661,8 @@
     })();
     // === PAGE TRANSITIONS ===
     (function () {
-      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff' };
-      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A' };
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A' };
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C' };
       var overlay = document.createElement('div');
       overlay.className = 'transition-overlay';
       overlay.style.background = '#0a0a0a';

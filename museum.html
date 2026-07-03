@@ -10,9 +10,7 @@
   <meta name="description" content="Брендинг Государственного музея истории Санкт-Петербурга: логотип, палитра, типографика, носители. Кейс WwolDEM." />
 
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.bunny.net" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.bunny.net/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.bunny.net" />  <link href="https://fonts.bunny.net/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <style>
     /* ============================================================
@@ -272,6 +270,12 @@
     /* ============================================================
        PREFERS-REDUCED-MOTION
        ============================================================ */
+    /* видимый фокус при навигации с клавиатуры */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--m-gold);
+      outline-offset: 3px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
       .reveal { opacity: 1 !important; transform: none !important; }

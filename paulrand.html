@@ -12,9 +12,7 @@
   <meta name="description" content="Учебная презентация о Поле Рэнде — классике графдизайна, авторе логотипов IBM, UPS, ABC, NeXT. Кейс WwolDEM." />
 
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.bunny.net" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.bunny.net/css2?family=Anton&family=IBM+Plex+Mono:wght@400;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.bunny.net" />  <link href="https://fonts.bunny.net/css2?family=Anton&family=IBM+Plex+Mono:wght@400;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
 
   <style>
     /* ============================================================
@@ -416,6 +414,12 @@
     /* ============================================================
        PREFERS-REDUCED-MOTION
        ============================================================ */
+    /* видимый фокус при навигации с клавиатуры */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--pr-red);
+      outline-offset: 3px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.001ms !important;
@@ -720,11 +724,6 @@
       <div>
         <div class="footer__name">Пол Рэнд</div>
         <div class="footer__copy">© 2026 — WwolDEM</div>
-        <a href="assets/paulrand/presentation.pdf"
-           download="Пол_Рэнд_WwolDEM.pdf"
-           class="btn-download">
-          ↓ скачать презентацию
-        </a>
       </div>
       <div class="footer__center">
         Учебная презентация<br />Максит, Москва · 2026
@@ -795,8 +794,8 @@
     })();
     // === PAGE TRANSITIONS ===
     (function () {
-      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff' };
-      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A' };
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A' };
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C' };
       var overlay = document.createElement('div');
       overlay.className = 'transition-overlay';
       overlay.style.background = '#ffffff';

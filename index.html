@@ -9,9 +9,7 @@
   <meta name="description" content="WwolDEM (Трифон Костенко) — дизайнер из Москвы. Брендинг, плакаты, веб. Всё начинается с Demo." />
 
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.bunny.net" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.bunny.net/css2?family=Unbounded:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.bunny.net" />  <link href="https://fonts.bunny.net/css2?family=Unbounded:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
 
   <style>
     /* ============================================================
@@ -659,6 +657,10 @@
     .card__preview--pr .pr-title { font-family: var(--font-display); font-weight: 900; font-size: 24px; color: #0D0D0D; }
     .card__preview--pr .pr-bar { width: 40px; height: 6px; background: #E8321A; margin: 12px auto 0; }
     .card__preview--pr .pr-sub { font-family: var(--font-ui); font-size: 9px; color: #8A8A8A; margin-top: 10px; }
+    /* тёмные подписи на белом превью (штатные — светлые, на белом не видны) */
+    .card__preview--pr .card__idx { color: rgba(13,13,13,0.12); }
+    .card__preview--pr .card__fig { color: rgba(13,13,13,0.4); }
+    .card:hover .card__preview--pr .card__idx { color: rgba(232,50,26,0.5); }
 
     /* превью ГМИ — логотип музея на «петербургской ночи» */
     .card__preview--gmi {
@@ -1022,6 +1024,7 @@
 
     /* 6. посимвольное появление текста футера */
     .footer__say .char { display: inline-block; white-space: pre; opacity: 0; }
+    .footer__say .word { white-space: nowrap; }
     .footer__say.play .char { animation: charIn 0.3s var(--ease) forwards; }
     @keyframes charIn {
       from { opacity: 0; transform: translateY(6px); }
@@ -1077,6 +1080,12 @@
     /* ============================================================
        PREFERS-REDUCED-MOTION
        ============================================================ */
+    /* видимый фокус при навигации с клавиатуры */
+    a:focus-visible, button:focus-visible, .card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.001ms !important;
@@ -1087,8 +1096,38 @@
       .fade-up, .reveal, .works__hint { opacity: 1 !important; transform: none !important; }
       .footer__say .char { opacity: 1 !important; transform: none !important; }
       .grain { animation: none; }
-      .cursor, .cursor-ring { display: none !important; }
+      .cursor, .cursor-ring, #cursorTrailCanvas, .dot-intro { display: none !important; }
     }
+    /* === DOT-MATRIX ЭФФЕКТЫ === */
+    /* тянущийся точечный шлейф за курсором */
+    #cursorTrailCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9998;
+    }
+    /* растровый прелоадер заголовка */
+    .dot-intro {
+      position: fixed;
+      z-index: 5;
+      pointer-events: none;
+    }
+    .dot-intro.hide { animation: dotIntroOut 0.3s ease forwards; }
+    @keyframes dotIntroOut {
+      0%   { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.96); }
+    }
+    /* при dot-intro (первый заход) заголовок и следом остальное появляются после растра (~1.1s);
+       без интро (повторный заход) — обычный быстрый каскад d1–d6 */
+    .has-intro .hero__title.fade-up    { animation-delay: 1.1s; }
+    .has-intro .hero__subtitle.fade-up { animation-delay: 1.25s; }
+    .has-intro .hero__cta.fade-up      { animation-delay: 1.4s; }
+    .has-intro .hero__stats.fade-up    { animation-delay: 1.55s; }
+    /* точечное кольцо печати */
+    .seal .dotring { opacity: 0.6; }
+
     /* === PAGE TRANSITIONS === */
     body { opacity: 1; transition: opacity 0.4s ease; }
     body.page-exit { opacity: 0; pointer-events: none; }
@@ -1110,6 +1149,7 @@
     <span class="cursor__box"></span>
     <span class="cursor__coords"><span id="curX">X: 0</span><span id="curY">Y: 0</span></span>
   </div>
+  <canvas id="cursorTrailCanvas" aria-hidden="true"></canvas>
 
   <!-- ========================================================
        БЛОК 1 — NAV
@@ -1161,6 +1201,7 @@
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <g class="ring">
           <path id="circlePath" fill="none" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0" />
+          <circle class="dotring" cx="50" cy="50" r="45" fill="none" stroke="#2ec796" stroke-width="1.2" stroke-dasharray="0.5 4" stroke-linecap="round" />
           <text><textPath href="#circlePath" startOffset="0">СКРОЛЛ ↓ ВНИЗ ↓ СКРОЛЛ ↓ ВНИЗ ↓ </textPath></text>
         </g>
       </svg>
@@ -1441,7 +1482,7 @@
     <div class="container">
       <div class="footer__cta reveal">
         <div class="footer__big">Wwol<span class="accent">DEM</span></div>
-        <p class="footer__say">Есть проект или идея? Напишите — соберём что-нибудь настоящее. <a href="https://t.me/WwolDEM" target="_blank" rel="noopener">Telegram ↗</a></p>
+        <p class="footer__say">Показываю проекты и процесс — заходи в <a href="https://t.me/WwolDEM" target="_blank" rel="noopener">Telegram-канал ↗</a></p>
       </div>
       <div class="footer__bar">
         <div class="footer__copy">© 2026 — <b>Трифон Костенко</b></div>
@@ -1514,6 +1555,7 @@
         cx.textContent = 'X: ' + mx;
         cy.textContent = 'Y: ' + my;
       });
+
 
       // хвост тянется за остриём через линейную интерполяцию
       (function loop() {
@@ -1667,14 +1709,25 @@
       var i = 0;
       (function wrap(node) {
         Array.prototype.slice.call(node.childNodes).forEach(function (child) {
-          if (child.nodeType === 3) { // текстовая нода → разбиваем на символы
+          if (child.nodeType === 3) { // текстовая нода → слова неразрывны, символы анимируются
             var frag = document.createDocumentFragment();
-            child.textContent.split('').forEach(function (ch) {
+            function addChar(ch, parent) {
               var s = document.createElement('span');
               s.className = 'char';
               s.textContent = ch;
               s.style.animationDelay = (i++ * 18) + 'ms';
-              frag.appendChild(s);
+              parent.appendChild(s);
+            }
+            child.textContent.split(/(\s+)/).forEach(function (token) {
+              if (!token) return;
+              if (/^\s+$/.test(token)) {
+                token.split('').forEach(function (ch) { addChar(ch, frag); }); // пробел — точка переноса
+              } else {
+                var w = document.createElement('span');
+                w.className = 'word'; // слово целиком не рвём
+                token.split('').forEach(function (ch) { addChar(ch, w); });
+                frag.appendChild(w);
+              }
             });
             node.replaceChild(frag, child);
           } else if (child.nodeType === 1) { // элемент (ссылка) → рекурсивно, сохраняя тег
@@ -1693,6 +1746,181 @@
         el.classList.add('play');
       }
     })();
+    // ============================================================
+    // Точечный шлейф-волна за курсором (canvas)
+    // ============================================================
+    (function () {
+      var canvas = document.getElementById('cursorTrailCanvas');
+      if (!canvas) return;
+      if (!finePointer || reduce) { canvas.style.display = 'none'; return; }
+
+      var ctx = canvas.getContext('2d');
+      var width, height, dots = [];
+      var GAP = 18, R = 78, R2 = R * R, DOT = 1.0;
+      function build() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        dots = [];
+        for (var gy = GAP / 2; gy < height; gy += GAP)
+          for (var gx = GAP / 2; gx < width; gx += GAP)
+            dots.push({ x: gx, y: gy, g: 0, spd: 0.8 + Math.random() * 0.4 });
+      }
+      build();
+      window.addEventListener('resize', build);
+
+      // цвет из --accent
+      function hexToRgb(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.replace(/./g, '$&$&');
+        var n = parseInt(hex, 16);
+        return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+      }
+      var accent = (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#2ec796').trim();
+      var rgb = hexToRgb(accent || '#2ec796');
+
+      // курсор «поджигает» ближайшие точки; их позиции фиксированы
+      var mx = -9999, my = -9999;
+      var lagX = -9999, lagY = -9999;   // отстающий центр поджигания (свет догоняет курсор)
+      var LAG = 0.13;                    // меньше = сильнее отстают от курсора
+      document.addEventListener('mousemove', function (e) {
+        mx = e.clientX; my = e.clientY;
+        if (lagX < -9000) { lagX = mx; lagY = my; } // при первом движении — без рывка из угла
+      });
+      document.addEventListener('mouseleave', function () { mx = -9999; my = -9999; });
+
+      var RISE = 0.30;   // загорается быстро
+      var FALL = 0.075;  // гаснет чуть быстрее → след короче
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        lagX += (mx - lagX) * LAG;   // центр поджигания плавно догоняет курсор
+        lagY += (my - lagY) * LAG;
+        for (var i = 0; i < dots.length; i++) {
+          var d = dots[i];
+          var dx = d.x - lagX, dy = d.y - lagY;
+          var d2 = dx * dx + dy * dy;
+          // цель яркости: 1 у курсора → 0 на границе, с мягким spmoothstep-спадом
+          var target = 0;
+          if (d2 < R2) {
+            var t = 1 - Math.sqrt(d2) / R;
+            target = t * t * (3 - 2 * t);
+          }
+          // у каждой точки чуть своя скорость → горят органично, не в унисон
+          d.g += (target - d.g) * (target > d.g ? RISE : FALL) * d.spd;
+          if (d.g > 0.012) {
+            var a = Math.min(1, d.g * 1.2);
+            ctx.shadowColor = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + a + ')';
+            ctx.shadowBlur = 4 + d.g * 8;                 // мягкий ореол свечения
+            ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + a + ')';
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, DOT * (1 + d.g * 0.5), 0, Math.PI * 2); // лёгкий пульс размера
+            ctx.fill();
+          }
+        }
+        ctx.shadowBlur = 0;
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+
+    // ============================================================
+    // Dot-matrix intro: растровый WwolDEM перед появлением логотипа
+    // ============================================================
+    (function () {
+      if (reduce) return; // при reduced-motion — сразу обычный логотип
+      // dot-intro показываем только один раз за сессию, дальше — обычное появление
+      try { if (sessionStorage.getItem('wdIntroShown')) return; } catch (e) {}
+      var title = document.querySelector('.hero__title');
+      if (!title) return;
+      try { sessionStorage.setItem('wdIntroShown', '1'); } catch (e) {}
+      document.body.classList.add('has-intro');
+
+      var intro = document.createElement('div');
+      intro.className = 'dot-intro';
+      intro.id = 'dotIntro';
+      var canvas = document.createElement('canvas');
+      canvas.style.pointerEvents = 'none';
+      intro.appendChild(canvas);
+      document.body.appendChild(intro);
+
+      var rafId = null;
+
+      function start() {
+        var rect = title.getBoundingClientRect();
+        if (rect.width < 10 || rect.height < 10) { intro.remove(); return; }
+        intro.style.left = rect.left + 'px';
+        intro.style.top = rect.top + 'px';
+        var W = Math.ceil(rect.width), H = Math.ceil(rect.height);
+        canvas.width = W; canvas.height = H;
+        var ctx = canvas.getContext('2d');
+
+        // скрытый рендер текста → пиксельная карта
+        var off = document.createElement('canvas');
+        off.width = W; off.height = H;
+        var offCtx = off.getContext('2d');
+        offCtx.fillStyle = '#fff';
+        offCtx.font = '900 ' + (H * 0.8) + 'px Unbounded, sans-serif';
+        offCtx.textBaseline = 'middle';
+        offCtx.fillText('WwolDEM', 0, H / 2);
+        var accentX = offCtx.measureText('Wwol').width; // граница белое/акцент
+        var data;
+        try { data = offCtx.getImageData(0, 0, W, H).data; }
+        catch (e) { intro.remove(); return; }
+
+        // собираем точки с волновой задержкой слева направо
+        var dotSize = 4, step = dotSize + 3;
+        var dots = [];
+        for (var y = 0; y < H; y += step) {
+          for (var x = 0; x < W; x += step) {
+            var a = data[(Math.floor(y) * W + Math.floor(x)) * 4 + 3];
+            if (a > 100) {
+              dots.push({
+                x: x, y: y,
+                ta: a / 255,
+                c: x >= accentX ? '46,199,150' : '255,255,255',
+                delay: 150 + (x / W) * 500 + Math.random() * 150
+              });
+            }
+          }
+        }
+
+        var t0 = performance.now();
+        function draw(now) {
+          var el = now - t0;
+          ctx.clearRect(0, 0, W, H);
+          var flash = el >= 950 && el < 1080; // финальная вспышка
+          for (var i = 0; i < dots.length; i++) {
+            var d = dots[i];
+            var le = el - d.delay;
+            if (le < 0) continue;
+            var al = le < 150 ? d.ta * (Math.sin(le * 0.3) * 0.5 + 0.5) : d.ta; // дрожание
+            if (flash) al = 1;
+            ctx.fillStyle = 'rgba(' + d.c + ',' + al + ')';
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, dotSize / 2 + (flash ? 0.5 : 0), 0, Math.PI * 2);
+            ctx.fill();
+          }
+          if (el < 1120) rafId = requestAnimationFrame(draw);
+        }
+        rafId = requestAnimationFrame(draw);
+
+        // растворение синхронно с появлением чёткого логотипа (~1.1s)
+        setTimeout(function () {
+          intro.classList.add('hide');
+          setTimeout(function () {
+            if (rafId) cancelAnimationFrame(rafId);
+            intro.remove();
+          }, 350);
+        }, 1100);
+      }
+
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(start);
+      } else {
+        window.addEventListener('load', start);
+      }
+    })();
+
     // === PAGE TRANSITIONS ===
     (function () {
       var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A' };

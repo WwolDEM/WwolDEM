@@ -9,9 +9,7 @@
   <meta name="description" content="Mind Stack — концептуальный AI-ассистент для разработчиков. Фирменный стиль: логотип, цвет, типографика, паттерн. Кейс WwolDEM." />
 
   <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.bunny.net" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.bunny.net/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.bunny.net" />  <link href="https://fonts.bunny.net/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <style>
     /* ============================================================
@@ -565,6 +563,12 @@
     /* ============================================================
        PREFERS-REDUCED-MOTION
        ============================================================ */
+    /* видимый фокус при навигации с клавиатуры */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--ms-white);
+      outline-offset: 3px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.001ms !important;
@@ -897,8 +901,8 @@
     })();
     // === PAGE TRANSITIONS ===
     (function () {
-      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff' };
-      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A' };
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A' };
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C' };
       var overlay = document.createElement('div');
       overlay.className = 'transition-overlay';
       overlay.style.background = '#0a0a0a';
