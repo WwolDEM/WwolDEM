@@ -580,26 +580,19 @@
     .works__count { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 
     .works__grid {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 20px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      /* большой запас со всех сторон под hover (scale + lift),
-         отрицательные margin компенсируют его, чтобы вёрстка не сдвигалась */
-      padding: 30px 24px;
-      margin: -16px -24px 0;
-      cursor: grab;
+      padding-top: 14px; /* запас под hover-подъём карточки */
     }
-    .works__grid:active,
-    .works__grid.active { cursor: grabbing; }
-    .works__grid::-webkit-scrollbar { display: none; }
-    .works__grid { scrollbar-width: none; }
+    /* средние экраны — 2 колонки; ниже 900px сработает правило 1fr из мобильного блока */
+    @media (max-width: 1399px) {
+      .works__grid { grid-template-columns: repeat(2, 1fr); }
+    }
 
     .card {
       display: block;
-      flex: 0 0 420px;
-      scroll-snap-align: start;
+      width: 100%;
       overflow: visible;
       transition: transform 0.4s var(--ease);
     }
@@ -1018,15 +1011,6 @@
     }
 
     /* 4. подсказка к горизонтальному скроллу */
-    .works__hint {
-      font-family: var(--font-ui);
-      font-size: 10px;
-      color: var(--text-dim);
-      margin: -36px 0 28px;
-      opacity: 0;
-      animation: fadeUp 0.6s var(--ease) forwards;
-      animation-delay: 0.4s;
-    }
 
     /* 6. посимвольное появление текста футера */
     .footer__say .char { display: inline-block; white-space: pre; opacity: 0; }
@@ -1046,7 +1030,7 @@
       .contacts__grid { grid-template-columns: 1fr; gap: 36px; }
       .other-grid { grid-template-columns: 1fr; }
       .live-grid { grid-template-columns: 1fr; }
-      .card { flex-basis: 80vw; }
+      .works__grid { grid-template-columns: 1fr; }
       .nav__clock { display: none; }
       .hero__meta { max-width: none; }
       .readout { display: none; }
@@ -1067,7 +1051,6 @@
       .hero__meta .hm + .hm { border-left: none; border-top: 1px solid var(--border); padding-left: 0; }
       .hero__stats { margin-top: 36px; }
       /* WORKS — карточки шире, превью ниже */
-      .card { flex-basis: 85vw; }
       .card__preview { height: 200px; }
       .card__name { font-size: 20px; }
       /* OTHER WORKS */
@@ -1099,21 +1082,12 @@
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
       }
-      .fade-up, .reveal, .works__hint { opacity: 1 !important; transform: none !important; }
+      .fade-up, .reveal { opacity: 1 !important; transform: none !important; }
       .footer__say .char { opacity: 1 !important; transform: none !important; }
       .grain { animation: none; }
-      .cursor, .cursor-ring, #cursorTrailCanvas, .dot-intro { display: none !important; }
+      .cursor, .cursor-ring, .dot-intro { display: none !important; }
     }
     /* === DOT-MATRIX ЭФФЕКТЫ === */
-    /* тянущийся точечный шлейф за курсором */
-    #cursorTrailCanvas {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 9998;
-    }
     /* растровый прелоадер заголовка */
     .dot-intro {
       position: fixed;
@@ -1155,8 +1129,6 @@
     <span class="cursor__box"></span>
     <span class="cursor__coords"><span id="curX">X: 0</span><span id="curY">Y: 0</span></span>
   </div>
-  <canvas id="cursorTrailCanvas" aria-hidden="true"></canvas>
-
   <!-- ========================================================
        БЛОК 1 — NAV
        ======================================================== -->
@@ -1275,10 +1247,8 @@
           <span class="label" style="margin-top:24px;">[ работы ]</span>
           <h2 class="works__title">Избранные проекты</h2>
         </div>
-        <div class="works__count">[ 03 / отобрано ]</div>
+        <div class="works__count">[ 04 / отобрано ]</div>
       </div>
-
-      <p class="works__hint" aria-hidden="true">← перетащи чтобы смотреть →</p>
 
       <div class="works__grid">
         <!-- Карточка 1 -->
@@ -1286,8 +1256,7 @@
           <div class="card__preview card__preview--ms">
             <img src="assets/mindstack/logo-white.png" alt="Mind Stack" style="width:120px; opacity:0.9; position:relative; z-index:1;" />
             <div class="card__idx">01</div>
-            <div class="card__fig">fig.01 — identity</div>
-          </div>
+            <div class="card__fig">fig.01 — identity</div>          </div>
           <div class="card__row">
             <span class="card__category">брендинг</span>
             <span class="card__link">смотреть кейс <span class="arr">→</span></span>
@@ -1305,8 +1274,7 @@
               <div class="mr-sub">POSTER SERIES · v1.0—v3.7</div>
             </div>
             <div class="card__idx">02</div>
-            <div class="card__fig">fig.02 — poster series</div>
-          </div>
+            <div class="card__fig">fig.02 — poster series</div>          </div>
           <div class="card__row">
             <span class="card__category">плакаты</span>
             <span class="card__link">смотреть кейс <span class="arr">→</span></span>
@@ -1325,8 +1293,7 @@
               <div class="pr-sub">IBM · UPS · ABC · NeXT</div>
             </div>
             <div class="card__idx">03</div>
-            <div class="card__fig">fig.03 — research</div>
-          </div>
+            <div class="card__fig">fig.03 — research</div>          </div>
           <div class="card__row">
             <span class="card__category">презентация</span>
             <span class="card__link">смотреть кейс <span class="arr">→</span></span>
@@ -1343,8 +1310,7 @@
               <div class="gmi-sub">МУЗЕЙ ИСТОРИИ · СПБ</div>
             </div>
             <div class="card__idx">04</div>
-            <div class="card__fig">fig.04 — identity</div>
-          </div>
+            <div class="card__fig">fig.04 — identity</div>          </div>
           <div class="card__row">
             <span class="card__category">брендинг</span>
             <span class="card__link">смотреть кейс <span class="arr">→</span></span>
@@ -1659,34 +1625,6 @@
     })();
 
     // ============================================================
-    // 4. Drag-to-scroll для горизонтальной ленты работ
-    // ============================================================
-    (function () {
-      var grid = document.querySelector('.works__grid');
-      if (!grid) return;
-      var isDown = false, startX = 0, scrollLeft = 0, moved = false;
-      grid.addEventListener('mousedown', function (e) {
-        isDown = true; moved = false;
-        grid.classList.add('active');
-        startX = e.pageX - grid.offsetLeft;
-        scrollLeft = grid.scrollLeft;
-      });
-      grid.addEventListener('mouseleave', function () { isDown = false; grid.classList.remove('active'); });
-      grid.addEventListener('mouseup', function () { isDown = false; grid.classList.remove('active'); });
-      grid.addEventListener('mousemove', function (e) {
-        if (!isDown) return;
-        e.preventDefault();
-        var x = e.pageX - grid.offsetLeft;
-        var walk = (x - startX) * 1.5;
-        if (Math.abs(walk) > 4) moved = true;
-        grid.scrollLeft = scrollLeft - walk;
-      });
-      // не переходить по карточке-ссылке, если это было перетаскивание
-      grid.querySelectorAll('.card').forEach(function (card) {
-        card.addEventListener('click', function (e) { if (moved) e.preventDefault(); });
-      });
-    })();
-
     // ============================================================
     // 5. Активный пункт навигации при скролле
     // ============================================================
@@ -1752,83 +1690,6 @@
         el.classList.add('play');
       }
     })();
-    // ============================================================
-    // Точечный шлейф-волна за курсором (canvas)
-    // ============================================================
-    (function () {
-      var canvas = document.getElementById('cursorTrailCanvas');
-      if (!canvas) return;
-      if (!finePointer || reduce) { canvas.style.display = 'none'; return; }
-
-      var ctx = canvas.getContext('2d');
-      var width, height, dots = [];
-      var GAP = 18, R = 78, R2 = R * R, DOT = 1.0;
-      function build() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        dots = [];
-        for (var gy = GAP / 2; gy < height; gy += GAP)
-          for (var gx = GAP / 2; gx < width; gx += GAP)
-            dots.push({ x: gx, y: gy, g: 0, spd: 0.8 + Math.random() * 0.4 });
-      }
-      build();
-      window.addEventListener('resize', build);
-
-      // цвет из --accent
-      function hexToRgb(hex) {
-        hex = hex.replace('#', '');
-        if (hex.length === 3) hex = hex.replace(/./g, '$&$&');
-        var n = parseInt(hex, 16);
-        return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-      }
-      var accent = (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#2ec796').trim();
-      var rgb = hexToRgb(accent || '#2ec796');
-
-      // курсор «поджигает» ближайшие точки; их позиции фиксированы
-      var mx = -9999, my = -9999;
-      var lagX = -9999, lagY = -9999;   // отстающий центр поджигания (свет догоняет курсор)
-      var LAG = 0.13;                    // меньше = сильнее отстают от курсора
-      document.addEventListener('mousemove', function (e) {
-        mx = e.clientX; my = e.clientY;
-        if (lagX < -9000) { lagX = mx; lagY = my; } // при первом движении — без рывка из угла
-      });
-      document.addEventListener('mouseleave', function () { mx = -9999; my = -9999; });
-
-      var RISE = 0.30;   // загорается быстро
-      var FALL = 0.075;  // гаснет чуть быстрее → след короче
-
-      function animate() {
-        ctx.clearRect(0, 0, width, height);
-        lagX += (mx - lagX) * LAG;   // центр поджигания плавно догоняет курсор
-        lagY += (my - lagY) * LAG;
-        for (var i = 0; i < dots.length; i++) {
-          var d = dots[i];
-          var dx = d.x - lagX, dy = d.y - lagY;
-          var d2 = dx * dx + dy * dy;
-          // цель яркости: 1 у курсора → 0 на границе, с мягким spmoothstep-спадом
-          var target = 0;
-          if (d2 < R2) {
-            var t = 1 - Math.sqrt(d2) / R;
-            target = t * t * (3 - 2 * t);
-          }
-          // у каждой точки чуть своя скорость → горят органично, не в унисон
-          d.g += (target - d.g) * (target > d.g ? RISE : FALL) * d.spd;
-          if (d.g > 0.012) {
-            var a = Math.min(1, d.g * 1.2);
-            ctx.shadowColor = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + a + ')';
-            ctx.shadowBlur = 4 + d.g * 8;                 // мягкий ореол свечения
-            ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + a + ')';
-            ctx.beginPath();
-            ctx.arc(d.x, d.y, DOT * (1 + d.g * 0.5), 0, Math.PI * 2); // лёгкий пульс размера
-            ctx.fill();
-          }
-        }
-        ctx.shadowBlur = 0;
-        requestAnimationFrame(animate);
-      }
-      animate();
-    })();
-
     // ============================================================
     // Dot-matrix intro: растровый WwolDEM перед появлением логотипа
     // ============================================================
