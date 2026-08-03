@@ -673,6 +673,23 @@
     .card:hover .card__preview--gmi .gmi-logo { transform: scale(1.05); }
     .card__preview--gmi .gmi-sub { font-family: var(--font-ui); font-size: 9px; color: #C9A84C; margin-top: 12px; letter-spacing: 0.05em; }
 
+    /* превью TrifonAI — терминальная строка */
+    .card__preview--ai { background: #0a0c0a; display: flex; align-items: center; justify-content: center; }
+    .card__preview--ai .ai-center { text-align: center; position: relative; z-index: 2; }
+    .card__preview--ai .ai-line { font-family: var(--font-ui); font-size: 20px; color: #39ff14; }
+    .card__preview--ai .ai-caret {
+      display: inline-block; width: 10px; height: 20px; background: #39ff14;
+      vertical-align: -3px; margin-left: 5px;
+      animation: aiBlink 530ms step-end infinite;
+    }
+    @keyframes aiBlink { 50% { opacity: 0; } }
+    .card__preview--ai .ai-sub { font-family: var(--font-ui); font-size: 9px; color: rgba(57,255,20,0.45); margin-top: 14px; letter-spacing: 0.1em; }
+    .card:hover .card__preview--ai { border-color: #39ff14; }
+
+    /* последняя карточка — на всю ширину сетки */
+    .works__grid > .card:last-child { grid-column: 1 / -1; }
+    .works__grid > .card:last-child .card__preview { height: 300px; }
+
     /* генеративная обложка */
     .art { position: absolute; inset: 0; transition: transform 0.6s var(--ease), opacity 0.4s ease; }
     .card:hover .art { transform: scale(1.06); }
@@ -1043,6 +1060,7 @@
       body, body * { cursor: auto !important; }
       /* лишний декор прячем */
       .grain, .frame, .hero__ghost { display: none; }
+      .memory-indicator { bottom: 16px; left: 16px; }
       /* HERO */
       .hero { min-height: 100svh; padding-top: 100px; padding-bottom: 60px; }
       .hero__cta { flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -1108,6 +1126,143 @@
     /* точечное кольцо печати */
     .seal .dotring { opacity: 0.6; }
 
+    /* === MEMORY SYSTEM: прогрессивное раскрытие интерфейса === */
+    .memory-indicator {
+      position: fixed;
+      bottom: 48px;               /* над (scroll)-счётчиком */
+      left: var(--pad);
+      z-index: 9997;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(10,10,10,0.6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.08);
+      pointer-events: none;
+    }
+    .memory-label { letter-spacing: 0.1em; }
+    .memory-value { color: var(--accent); font-weight: 700; min-width: 32px; }
+    .memory-bar { width: 60px; height: 2px; background: rgba(255,255,255,0.1); overflow: hidden; }
+    .memory-bar-fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.6s ease; }
+
+    /* скрытые детали — невидимы, проявляются классами на <html> */
+    .coord-tag, .gridline, .dot-grid-overlay {
+      opacity: 0;
+      transition: opacity 1s ease;
+      pointer-events: none;
+    }
+    .coord-tag {
+      display: inline-block;
+      font-family: var(--font-ui);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-top: 10px;
+    }
+    .gridline { position: absolute; background: rgba(46,199,150,0.3); z-index: 1; }
+    .gridline--v { top: 0; bottom: 0; width: 1px; }
+    .dot-grid-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-image: radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    html.reveal-coords .coord-tag { opacity: 0.55; }
+    html.reveal-gridlines .gridline { opacity: 0.15; }
+    /* номера секций: дефолт не трогаем, при раскрытии контур подсвечивается акцентом */
+    html.reveal-secnumbers .sec-index { -webkit-text-stroke-color: rgba(46,199,150,0.4); }
+    html.reveal-dotgrid .dot-grid-overlay { opacity: 0.05; }
+
+    /* финал при 100% */
+    .memory-complete {
+      position: fixed;
+      inset: 0;
+      z-index: 999998;
+      background: rgba(10,10,10,0.96);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+    .memory-complete.show { opacity: 1; }
+    .memory-complete__content { text-align: center; font-family: var(--font-display); }
+    .memory-complete__title { font-size: clamp(28px, 5vw, 56px); font-weight: 900; color: var(--accent); letter-spacing: -0.02em; }
+    .memory-complete__sub { font-family: var(--font-body); font-weight: 300; font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 16px; }
+    html.memory-100 .hero__title { text-shadow: 0 0 30px rgba(46,199,150,0.3); }
+
+    /* === HIDDEN TERMINAL (Ctrl/Cmd+Shift+.) === */
+    .terminal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.97);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 999999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-ui);
+    }
+    .terminal-overlay.open { display: flex; }
+    /* внутри терминала — системный курсор (кастомный квадрат остаётся под оверлеем) */
+    .terminal-overlay, .terminal-overlay * { cursor: auto !important; }
+    .terminal-overlay .terminal-input { cursor: text !important; }
+
+    .terminal-window {
+      width: min(720px, 90vw);
+      height: min(480px, 70vh);
+      background: #0a0a0a;
+      border: 1px solid rgba(46, 199, 150, 0.3);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 60px rgba(46, 199, 150, 0.08);
+    }
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(46, 199, 150, 0.2);
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+    }
+    .terminal-header .dots { display: flex; gap: 6px; }
+    .terminal-header .dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+    .terminal-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--accent);
+    }
+    .terminal-body .line { white-space: pre-wrap; word-break: break-word; }
+    .terminal-body .line.system { color: rgba(255,255,255,0.5); }
+    .terminal-input-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      border-top: 1px solid rgba(46, 199, 150, 0.2);
+    }
+    .terminal-input-row .prompt { color: var(--accent); margin-right: 8px; font-size: 13px; }
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-ui);
+      font-size: 13px;
+    }
+
     /* === PAGE TRANSITIONS === */
     body { opacity: 1; transition: opacity 0.4s ease; }
     body.page-exit { opacity: 0; pointer-events: none; }
@@ -1122,6 +1277,7 @@
   <div class="frame" aria-hidden="true"></div>
   <div class="progress" id="progress" aria-hidden="true"></div>
   <div class="readout" aria-hidden="true"><span>(scroll)</span><b id="pct">000%</b></div>
+  <div class="dot-grid-overlay" aria-hidden="true"></div>
 
   <!-- кастомный курсор: квадрат (мгновенно) + квадратное кольцо-хвост (lerp) -->
   <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
@@ -1151,12 +1307,17 @@
        ======================================================== -->
   <header class="hero" id="top">
     <div class="hero__ghost" aria-hidden="true">26</div>
+    <!-- скрытые направляющие (проявляются с прогрессом MEMORY) -->
+    <div class="gridline gridline--v" style="left: 25%" aria-hidden="true"></div>
+    <div class="gridline gridline--v" style="left: 50%" aria-hidden="true"></div>
+    <div class="gridline gridline--v" style="left: 75%" aria-hidden="true"></div>
     <div class="container">
       <div class="hero__meta fade-up d1">
         <span>55.75° N<br /><b>37.61° E</b></span>
         <span>дисциплина<br /><b>graphic / web</b></span>
         <span>статус<br /><b>открыт к работе</b></span>
       </div>
+      <span class="coord-tag" aria-hidden="true">X: <span id="liveX">0</span> · Y: <span id="liveY">0</span></span>
       <p class="hero__eyebrow fade-up d2"><span class="dot">●</span> дизайнер · Москва · 2026</p>
       <h1 class="hero__title fade-up d3"><span class="title-a">Wwol</span><span class="title-b accent">DEM</span><sup>™</sup></h1>
       <p class="hero__subtitle fade-up d4">Всё начинается с <em>Demo</em></p>
@@ -1247,7 +1408,7 @@
           <span class="label" style="margin-top:24px;">[ работы ]</span>
           <h2 class="works__title">Избранные проекты</h2>
         </div>
-        <div class="works__count">[ 04 / отобрано ]</div>
+        <div class="works__count">[ 05 / отобрано ]</div>
       </div>
 
       <div class="works__grid">
@@ -1317,6 +1478,24 @@
           </div>
           <h3 class="card__name">ГМИ СПб</h3>
           <p class="card__desc">Логотип и брендбук для Музея истории Санкт-Петербурга</p>
+        </a>
+
+        <!-- Карточка 5 — на всю ширину -->
+        <a href="trifonai.html" class="card reveal">
+          <div class="card__preview card__preview--ai">
+            <div class="ai-center">
+              <div class="ai-line">$ trifonai --start<span class="ai-caret"></span></div>
+              <div class="ai-sub">ЛОКАЛЬНАЯ ИИ-ПЛАТФОРМА · v1.2 · 10 ИНСТРУМЕНТОВ</div>
+            </div>
+            <div class="card__idx">05</div>
+            <div class="card__fig">fig.05 — ai platform</div>
+          </div>
+          <div class="card__row">
+            <span class="card__category">разработка</span>
+            <span class="card__link">смотреть кейс <span class="arr">→</span></span>
+          </div>
+          <h3 class="card__name">TrifonAI</h3>
+          <p class="card__desc">Персональная локальная ИИ-платформа: память, десять инструментов, веб-интерфейс</p>
         </a>
       </div>
     </div>
@@ -1462,6 +1641,24 @@
       </div>
     </div>
   </footer>
+
+  <!-- скрытый терминал: Ctrl/Cmd+Shift+. -->
+  <div class="terminal-overlay" id="terminalOverlay">
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span>wwoldem@portfolio:~</span>
+      </div>
+      <div class="terminal-body" id="terminalBody">
+        <div class="line system">WwolDEM Terminal v1.0</div>
+        <div class="line system">Введите "help" чтобы увидеть доступные команды.</div>
+      </div>
+      <div class="terminal-input-row">
+        <span class="prompt">$</span>
+        <input type="text" class="terminal-input" id="terminalInput" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  </div>
 
   <script>
     'use strict';
@@ -1790,8 +1987,8 @@
 
     // === PAGE TRANSITIONS ===
     (function () {
-      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A' };
-      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C' };
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A', 'trifonai.html': '#0a0c0a' };
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C', 'trifonai.html': '#39ff14' };
       var overlay = document.createElement('div');
       overlay.className = 'transition-overlay';
       overlay.style.background = '#0a0a0a';
@@ -1822,6 +2019,396 @@
       window.addEventListener('pageshow', function (e) {
         if (e.persisted) { overlay.classList.remove('active'); accentBar.style.width = '0%'; document.body.classList.remove('page-exit'); }
       });
+    })();
+    // ============================================================
+    // HIDDEN TERMINAL — Ctrl/Cmd+Shift+. (пасхалка-навигация)
+    // ============================================================
+    (function () {
+      var overlay = document.getElementById('terminalOverlay');
+      var body = document.getElementById('terminalBody');
+      var input = document.getElementById('terminalInput');
+      if (!overlay || !body || !input) return;
+      var terminalOpen = false;
+
+      function openTerminal() {
+        terminalOpen = true;
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        input.focus();
+      }
+      function closeTerminal() {
+        terminalOpen = false;
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      function toggleTerminal() { terminalOpen ? closeTerminal() : openTerminal(); }
+
+      document.addEventListener('keydown', function (e) {
+        var isDot = e.key === '.' || e.key === '>' || e.code === 'Period';
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && isDot) {
+          e.preventDefault();
+          toggleTerminal();
+        }
+        if (e.key === 'Escape' && terminalOpen) closeTerminal();
+      });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeTerminal();
+      });
+
+      function printLine(text, isSystem) {
+        var line = document.createElement('div');
+        line.className = 'line' + (isSystem ? ' system' : '');
+        line.textContent = text;
+        body.appendChild(line);
+        body.scrollTop = body.scrollHeight;
+      }
+
+      // matrix-эффект: падающие символы поверх окна на 3 сек
+      function runMatrixEffect() {
+        var termWindow = overlay.querySelector('.terminal-window');
+        var canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:absolute; inset:0; z-index:10;';
+        termWindow.style.position = 'relative';
+        termWindow.appendChild(canvas);
+        var ctx = canvas.getContext('2d');
+        canvas.width = termWindow.offsetWidth;
+        canvas.height = termWindow.offsetHeight;
+        var chars = '01WWOLDEMｱｲｳｴｵ';
+        var fontSize = 12;
+        var columns = Math.floor(canvas.width / fontSize);
+        var drops = new Array(columns).fill(1);
+        var interval = setInterval(function () {
+          ctx.fillStyle = 'rgba(10,10,10,0.1)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#2ec796';
+          ctx.font = fontSize + 'px monospace';
+          drops.forEach(function (y, i) {
+            var ch = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(ch, i * fontSize, y * fontSize);
+            if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+          });
+        }, 50);
+        setTimeout(function () { clearInterval(interval); canvas.remove(); }, 3000);
+      }
+
+      var COMMANDS = {
+        help: function () {
+          printLine('Доступные команды:', true);
+          printLine('  help      — список команд');
+          printLine('  about     — обо мне');
+          printLine('  projects  — список проектов');
+          printLine('  skills    — инструменты и навыки');
+          printLine('  contact   — контакты');
+          printLine('  whoami    — кто ты');
+          printLine('  random    — случайный факт');
+          printLine('  matrix    — ???');
+          printLine('  secret    — ???');
+          printLine('  version   — история сайта');
+          printLine('  easteregg — сюрприз');
+          printLine('  clear     — очистить экран');
+        },
+        about: function () {
+          printLine('Трифон Костенко — дизайнер из Москвы.');
+          printLine('Учусь в Максите. Работаю с брендингом,');
+          printLine('плакатами и вебом. WwolDEM — мой псевдоним.');
+        },
+        projects: function () {
+          printLine('01. Mind Stack   — брендинг AI-ассистента');
+          printLine('02. Marathon     — плакаты по игре');
+          printLine('03. Пол Рэнд     — исследование графдизайна');
+          printLine('04. ГМИ СПб      — брендинг музея истории');
+          printLine('Открой любой проект через меню выше.');
+        },
+        skills: function () {
+          printLine('Figma · Illustrator · Photoshop');
+          printLine('HTML / CSS / немного JS');
+          printLine('AI-инструменты в рабочем процессе');
+        },
+        contact: function () {
+          printLine('Telegram: @Trifon_Koss_W');
+          printLine('Behance: behance.net/triffkoss');
+          printLine('Телефон: +7 (933) 252-63-89');
+        },
+        whoami: function () {
+          printLine('Гость, исследующий терминал WwolDEM.');
+          printLine('Уважение за находчивость.');
+        },
+        random: function () {
+          var facts = [
+            'Логотип Mind Stack основан на форме головы со схемами.',
+            'Marathon использует палитру graphic retro futurism.',
+            'Логотип на первом заходе собирается из растровых точек.',
+            'Слоган сайта — игра слов: WwolDEM → DEM → Demo.',
+            'Страница Пол Рэнда набрана шрифтом печатной машинки.'
+          ];
+          printLine(facts[Math.floor(Math.random() * facts.length)]);
+        },
+        matrix: function () {
+          printLine('Запуск matrix-режима...', true);
+          runMatrixEffect();
+        },
+        secret: function () {
+          printLine('Секретных проектов пока нет.', true);
+          printLine('Но однажды они появятся здесь.', true);
+        },
+        version: function () {
+          printLine('v1.0 — запуск сайта, 2026');
+          printLine('v1.1 — добавлены страницы кейсов');
+          printLine('v1.2 — мобильная адаптация');
+          printLine('v1.3 — домен wwoldem.ru');
+          printLine('v1.4 — dot-matrix интерфейс');
+        },
+        easteregg: function () {
+          printLine('Ты нашёл терминал. Не все его находят.', true);
+          printLine('Продолжай исследовать — там ещё есть детали.', true);
+        },
+        clear: function () { body.innerHTML = ''; }
+      };
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        var cmd = input.value.trim().toLowerCase();
+        printLine('$ ' + cmd);
+        input.value = '';
+        if (cmd === '') return;
+        if (COMMANDS[cmd]) {
+          COMMANDS[cmd]();
+        } else {
+          printLine('Команда не найдена: "' + cmd + '". Введите "help".', true);
+        }
+      });
+    })();
+    // ============================================================
+    // MEMORY SYSTEM — сайт раскрывается по мере исследования
+    // ============================================================
+    (function () {
+      var MemorySystem = {
+        progress: 0,
+        actions: {
+          scrolledHalf: false,
+          scrolledFull: false,
+          visitedAbout: false,
+          hoveredAllCards: new Set(),
+          mouseDistance: 0,
+          mouseExploreDone: false,
+          timeSpentDone: false,
+          casesCounted: new Set(),
+          triggered100: false
+        },
+        /* максимум на главной — 60% (10+10+10+4×5+5+5);
+           остальные 40% дают 5 кейсов, каждый нужно пролистать до конца (+8) */
+        points: { scrollHalf: 10, scrollFull: 10, aboutSection: 10, perCardHover: 4, mouseExplore: 5, timeSpent: 5, perCaseVisit: 8 },
+
+        init: function () {
+          this.loadState();
+          this.trackScroll();
+          this.trackAbout();
+          this.trackCardHovers();
+          if (finePointer) { this.trackMouseMovement(); } else { this.trackTaps(); }
+          this.trackTime();
+          this.trackCases();
+          this.renderIndicator();
+          this.revealDetails(); // восстановить раскрытие после перезагрузки
+        },
+
+        // кейсы пишут отметку в sessionStorage, когда их пролистали до конца
+        trackCases: function () {
+          var self = this;
+          function check() {
+            try {
+              var arr = JSON.parse(sessionStorage.getItem('memory-cases') || '[]');
+              arr.forEach(function (name) {
+                if (!self.actions.casesCounted.has(name)) {
+                  self.actions.casesCounted.add(name);
+                  self.addProgress(self.points.perCaseVisit);
+                }
+              });
+            } catch (e) {}
+          }
+          check();
+          window.addEventListener('pageshow', check); // возврат из bfcache
+        },
+
+        addProgress: function (amount) {
+          if (this.progress >= 100) return;
+          this.progress = Math.min(100, this.progress + amount);
+          this.saveState();
+          this.updateIndicator();
+          this.revealDetails();
+          if (this.progress >= 100 && !this.actions.triggered100) {
+            this.actions.triggered100 = true;
+            this.saveState();
+            this.triggerCompletion();
+          }
+        },
+
+        trackScroll: function () {
+          var self = this;
+          window.addEventListener('scroll', function () {
+            var p = (window.scrollY + window.innerHeight) / document.body.scrollHeight;
+            if (p > 0.5 && !self.actions.scrolledHalf) {
+              self.actions.scrolledHalf = true;
+              self.addProgress(self.points.scrollHalf);
+            }
+            if (p > 0.95 && !self.actions.scrolledFull) {
+              self.actions.scrolledFull = true;
+              self.addProgress(self.points.scrollFull);
+            }
+          }, { passive: true });
+        },
+
+        trackAbout: function () {
+          var self = this;
+          var about = document.getElementById('about');
+          if (!about || !('IntersectionObserver' in window)) return;
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (en) {
+              if (en.isIntersecting && !self.actions.visitedAbout) {
+                self.actions.visitedAbout = true;
+                self.addProgress(self.points.aboutSection);
+                io.disconnect();
+              }
+            });
+          }, { threshold: 0.4 });
+          io.observe(about);
+        },
+
+        trackCardHovers: function () {
+          var self = this;
+          document.querySelectorAll('.works__grid .card').forEach(function (card, i) {
+            card.addEventListener('mouseenter', function () {
+              if (!self.actions.hoveredAllCards.has(i)) {
+                self.actions.hoveredAllCards.add(i);
+                self.addProgress(self.points.perCardHover);
+              }
+            });
+          });
+        },
+
+        trackMouseMovement: function () {
+          var self = this, lastX = null, lastY = null;
+          var liveX = document.getElementById('liveX');
+          var liveY = document.getElementById('liveY');
+          document.addEventListener('mousemove', function (e) {
+            if (lastX !== null) {
+              var dx = e.clientX - lastX, dy = e.clientY - lastY;
+              self.actions.mouseDistance += Math.sqrt(dx * dx + dy * dy);
+            }
+            lastX = e.clientX; lastY = e.clientY;
+            if (liveX) { liveX.textContent = e.clientX; liveY.textContent = e.clientY; }
+            if (self.actions.mouseDistance > 5000 && !self.actions.mouseExploreDone) {
+              self.actions.mouseExploreDone = true;
+              self.addProgress(self.points.mouseExplore);
+            }
+          });
+        },
+
+        // на touch вместо дистанции мыши — 5 тапов по интерактивным элементам
+        trackTaps: function () {
+          var self = this, taps = 0;
+          document.addEventListener('click', function (e) {
+            if (self.actions.mouseExploreDone) return;
+            if (e.target.closest('a, button')) {
+              taps++;
+              if (taps >= 5) {
+                self.actions.mouseExploreDone = true;
+                self.addProgress(self.points.mouseExplore);
+              }
+            }
+          });
+        },
+
+        trackTime: function () {
+          var self = this;
+          if (this.actions.timeSpentDone) return;
+          setTimeout(function () {
+            if (self.actions.timeSpentDone) return;
+            self.actions.timeSpentDone = true;
+            self.addProgress(self.points.timeSpent);
+          }, 30000);
+        },
+
+        saveState: function () {
+          try {
+            var a = this.actions;
+            sessionStorage.setItem('memory-progress', JSON.stringify({
+              progress: this.progress,
+              actions: {
+                scrolledHalf: a.scrolledHalf, scrolledFull: a.scrolledFull,
+                visitedAbout: a.visitedAbout, hoveredAllCards: Array.from(a.hoveredAllCards),
+                mouseExploreDone: a.mouseExploreDone, timeSpentDone: a.timeSpentDone,
+                casesCounted: Array.from(a.casesCounted),
+                triggered100: a.triggered100
+              }
+            }));
+          } catch (e) {}
+        },
+
+        loadState: function () {
+          try {
+            var saved = sessionStorage.getItem('memory-progress');
+            if (!saved) return;
+            var d = JSON.parse(saved);
+            this.progress = d.progress || 0;
+            var a = d.actions || {};
+            this.actions.scrolledHalf = !!a.scrolledHalf;
+            this.actions.scrolledFull = !!a.scrolledFull;
+            this.actions.visitedAbout = !!a.visitedAbout;
+            this.actions.hoveredAllCards = new Set(a.hoveredAllCards || []);
+            this.actions.mouseExploreDone = !!a.mouseExploreDone;
+            this.actions.timeSpentDone = !!a.timeSpentDone;
+            this.actions.casesCounted = new Set(a.casesCounted || []);
+            this.actions.triggered100 = !!a.triggered100;
+          } catch (e) {}
+        },
+
+        renderIndicator: function () {
+          var el = document.createElement('div');
+          el.id = 'memoryIndicator';
+          el.className = 'memory-indicator';
+          el.setAttribute('aria-hidden', 'true');
+          el.innerHTML = '<span class="memory-label">MEMORY</span>' +
+            '<span class="memory-value">0%</span>' +
+            '<div class="memory-bar"><div class="memory-bar-fill"></div></div>';
+          document.body.appendChild(el);
+          this.updateIndicator();
+        },
+
+        updateIndicator: function () {
+          var el = document.getElementById('memoryIndicator');
+          if (!el) return;
+          el.querySelector('.memory-value').textContent = Math.round(this.progress) + '%';
+          el.querySelector('.memory-bar-fill').style.width = this.progress + '%';
+        },
+
+        revealDetails: function () {
+          var html = document.documentElement;
+          if (this.progress >= 20) html.classList.add('reveal-coords');
+          if (this.progress >= 40) html.classList.add('reveal-gridlines');
+          if (this.progress >= 60) html.classList.add('reveal-secnumbers');
+          if (this.progress >= 80) html.classList.add('reveal-dotgrid');
+          if (this.progress >= 100) html.classList.add('memory-100');
+        },
+
+        triggerCompletion: function () {
+          document.documentElement.classList.add('memory-100');
+          var overlay = document.createElement('div');
+          overlay.className = 'memory-complete';
+          overlay.innerHTML = '<div class="memory-complete__content">' +
+            '<div class="memory-complete__title">YOU\'VE SEEN EVERYTHING</div>' +
+            '<div class="memory-complete__sub">Спасибо, что заглянул так глубоко.</div></div>';
+          document.body.appendChild(overlay);
+          requestAnimationFrame(function () { overlay.classList.add('show'); });
+          setTimeout(function () {
+            overlay.classList.remove('show');
+            setTimeout(function () { overlay.remove(); }, 600);
+          }, 3500);
+        }
+      };
+
+      MemorySystem.init();
     })();
   </script>
 
