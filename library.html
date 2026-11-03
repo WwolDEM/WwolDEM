@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Библиотека проектов · WwolDEM</title>
+  <meta property="og:title" content="Библиотека проектов | WwolDEM">
+  <meta property="og:description" content="Всё, что я сделал — от брендингов до платформ.">
+  <meta property="og:image" content="https://wwoldem.ru/assets/og/og-image.png">
+  <meta property="og:url" content="https://wwoldem.ru/library.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" type="image/png" href="assets/favicon/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon/favicon.png">
+  <meta name="description" content="Библиотека проектов WwolDEM (Трифон Костенко): брендинг, плакаты, сайты, концепты и платформы." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css2?family=Unbounded:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — как на главной
+       ============================================================ */
+    :root {
+      --bg:         #0a0a0a;
+      --surface:    #111111;
+      --border:     #1e1e1e;
+      --text:       #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.4);
+      --text-dim:   rgba(255, 255, 255, 0.15);
+      --accent:     #2ec796;
+      --accent-dim: rgba(46, 199, 150, 0.12);
+
+      --maxw: 1200px;
+      --pad:  48px;
+
+      --font-display: 'Unbounded', sans-serif;
+      --font-ui:      'Space Mono', 'IBM Plex Mono', monospace; /* в Space Mono нет кириллицы — русские буквы из IBM Plex Mono */
+      --font-body:    'Inter', sans-serif;
+
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    @media (pointer: fine) { body, body * { cursor: none !important; } }
+    a { color: inherit; text-decoration: none; }
+    .container { position: relative; z-index: 2; width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad); }
+
+    /* ============================================================
+       ДЕКОР: рамка-колонка, прогресс скролла, счётчик
+       ============================================================ */
+    .frame {
+      position: fixed; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: calc(var(--maxw) + var(--pad) * 2);
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .frame::before, .frame::after {
+      content: ""; position: absolute; top: 0; bottom: 0; width: 1px;
+      background: var(--border); opacity: 0.6;
+    }
+    .frame::before { left: var(--pad); }
+    .frame::after  { right: var(--pad); }
+    .progress {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent); z-index: 9100;
+      transition: width 0.1s linear;
+    }
+    .readout {
+      position: fixed; left: var(--pad); bottom: 22px; z-index: 80;
+      font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.08em;
+      color: var(--text-dim); pointer-events: none;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .readout b { color: var(--text-muted); font-weight: 400; }
+
+    /* ============================================================
+       КУРСОР — квадрат + хвост + координаты
+       ============================================================ */
+    .cursor, .cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      pointer-events: none; will-change: transform; display: none;
+    }
+    .cursor__box {
+      position: absolute; top: 0; left: 0; width: 7px; height: 7px;
+      background: var(--accent);
+      transform: translate(-50%, -50%);
+      transition: width 0.15s ease, height 0.15s ease;
+    }
+    .cursor.is-hover .cursor__box { width: 18px; height: 18px; }
+    .cursor__coords {
+      position: absolute; left: 16px; top: 4px;
+      font-family: var(--font-ui); font-size: 9px; line-height: 1.3;
+      color: var(--accent); opacity: 0.7; white-space: nowrap;
+    }
+    .cursor__coords span { display: block; }
+    .cursor-ring {
+      width: 34px; height: 34px;
+      border: 1px solid var(--accent);
+      transform: translate(-50%, -50%);
+      opacity: 0.5;
+      transition: width 0.25s var(--ease), height 0.25s var(--ease),
+                  opacity 0.25s var(--ease), background 0.25s var(--ease);
+    }
+    .cursor-ring.is-hover { width: 54px; height: 54px; background: var(--accent-dim); opacity: 1; }
+    /* над мятной заливкой мятный курсор исчез бы — становится чёрным */
+    .cursor.on-accent .cursor__box { background: #000; }
+    .cursor.on-accent .cursor__coords { color: #000; }
+    .cursor-ring.on-accent { border-color: #000; background: transparent; }
+
+    /* ============================================================
+       NAV
+       ============================================================ */
+    .nav {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+      border-bottom: 1px solid transparent;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .nav.scrolled {
+      background: rgba(10, 10, 10, 0.7);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav__inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 70px; }
+    .nav__back { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); transition: color 0.2s ease; }
+    .nav__back:hover { color: var(--accent); }
+    .nav__status { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .lib-hero { padding: 170px 0 64px; }
+    .lib-hero__title {
+      font-family: var(--font-display); font-weight: 900;
+      font-size: clamp(32px, 10.5vw, 132px);
+      line-height: 1; letter-spacing: -0.03em;
+    }
+    .lib-hero__count { font-family: var(--font-ui); font-size: 13px; color: var(--accent); margin-top: 32px; }
+    .lib-hero__text { font-weight: 300; font-size: 15px; color: var(--text-muted); margin-top: 10px; }
+
+    /* ============================================================
+       ФИЛЬТРЫ
+       ============================================================ */
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      font-family: var(--font-ui); font-size: 11px;
+      padding: 9px 14px; white-space: nowrap;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 0;
+    }
+    .chip:hover { color: var(--accent); border-color: var(--accent); }
+    .chip.is-active { color: #000; background: var(--accent); border-color: var(--accent); }
+
+    /* ============================================================
+       ПЛИТКИ — как карточки «Основные проекты» на главной
+       ============================================================ */
+    .lib-grid {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 32px 0 120px;
+      padding-top: 14px; /* запас под hover-подъём карточки */
+    }
+    .lib-grid > li { min-width: 0; }
+    .lib-grid > li[hidden] { display: none; }
+
+    .card {
+      display: block;
+      width: 100%;
+      overflow: visible;
+      transition: transform 0.4s var(--ease);
+    }
+    .card:hover { transform: translateY(-6px); }
+
+    .card__preview {
+      position: relative;
+      height: 280px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      overflow: hidden;
+      transition: border-color 0.4s ease, transform 0.35s var(--ease);
+    }
+    .card:hover .card__preview { border-color: var(--accent); transform: scale(1.03); }
+    /* усиленный hover: мятный оверлей поверх превью */
+    .card__preview::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: rgba(46, 199, 150, 0.08);
+      opacity: 0;
+      transition: opacity 0.35s var(--ease);
+      z-index: 3;
+      pointer-events: none;
+    }
+    .card:hover .card__preview::after { opacity: 1; }
+
+    /* превью Mind Stack — лого на тёмном фоне с паттерном */
+    .card__preview--ms {
+      background: #0A0A0A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card__preview--ms::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url(assets/mindstack/pattern.svg);
+      background-size: 180px;
+      opacity: 0.07;
+      pointer-events: none;
+    }
+    .card__preview--ms img { width: 120px; opacity: 0.9; position: relative; z-index: 1; transition: transform 0.4s ease; }
+    .card:hover .card__preview--ms img { transform: scale(1.06); }
+
+    /* превью Marathon — оранжевая сетка + крупный MARATHON */
+    .card__preview--mr {
+      background-color: #0A0A0A;
+      background-image:
+        linear-gradient(rgba(255,107,0,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,107,0,0.08) 1px, transparent 1px);
+      background-size: 30px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card__preview--mr .mr-line { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #FF6B00; opacity: 0.4; z-index: 1; }
+    .card__preview--mr .mr-center { position: relative; z-index: 2; text-align: center; }
+    .card__preview--mr .mr-title { font-family: var(--font-display); font-weight: 900; font-size: 28px; letter-spacing: -0.02em; color: #fff; opacity: 0.9; }
+    .card__preview--mr .mr-sub { font-family: var(--font-ui); font-size: 9px; color: #FF6B00; margin-top: 8px; }
+
+    /* превью Пол Рэнд — белый фон, ПОЛ РЭНД + красная плашка + водяной знак R */
+    .card__preview--pr {
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card__preview--pr .pr-wm { position: absolute; right: -10px; bottom: -20px; font-family: var(--font-display); font-weight: 900; font-size: 120px; line-height: 1; color: rgba(0,0,0,0.04); z-index: 1; pointer-events: none; }
+    .card__preview--pr .pr-center { position: relative; z-index: 2; text-align: center; }
+    .card__preview--pr .pr-title { font-family: var(--font-display); font-weight: 900; font-size: 24px; color: #0D0D0D; }
+    .card__preview--pr .pr-bar { width: 40px; height: 6px; background: #E8321A; margin: 12px auto 0; }
+    .card__preview--pr .pr-sub { font-family: var(--font-ui); font-size: 9px; color: #8A8A8A; margin-top: 10px; }
+    /* тёмные подписи на белом превью */
+    .card__preview--pr .card__idx { color: rgba(13,13,13,0.12); }
+    .card__preview--pr .card__fig { color: rgba(13,13,13,0.4); }
+    .card:hover .card__preview--pr .card__idx { color: rgba(232,50,26,0.5); }
+
+    /* превью ГМИ — логотип музея на «петербургской ночи» */
+    .card__preview--gmi {
+      background: #1B2A4A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card__preview--gmi .gmi-center { position: relative; z-index: 2; text-align: center; }
+    .card__preview--gmi .gmi-logo { width: 180px; height: auto; display: block; margin: 0 auto; transition: transform 0.4s ease; }
+    .card:hover .card__preview--gmi .gmi-logo { transform: scale(1.05); }
+    .card__preview--gmi .gmi-sub { font-family: var(--font-ui); font-size: 9px; color: #C9A84C; margin-top: 12px; letter-spacing: 0.05em; }
+
+    /* превью TrifonAI — терминальная строка */
+    .card__preview--ai { background: #0a0c0a; display: flex; align-items: center; justify-content: center; }
+    .card__preview--ai .ai-center { text-align: center; position: relative; z-index: 2; }
+    .card__preview--ai .ai-line { font-family: var(--font-ui); font-size: 20px; color: #39ff14; }
+    .card__preview--ai .ai-caret {
+      display: inline-block; width: 10px; height: 20px; background: #39ff14;
+      vertical-align: -3px; margin-left: 5px;
+      animation: aiBlink 530ms step-end infinite;
+    }
+    @keyframes aiBlink { 50% { opacity: 0; } }
+    .card__preview--ai .ai-sub { font-family: var(--font-ui); font-size: 9px; color: rgba(57,255,20,0.45); margin-top: 14px; letter-spacing: 0.1em; }
+    .card:hover .card__preview--ai { border-color: #39ff14; }
+
+    /* превью blaze — кора, логотип-метка берёстой, красная буква l */
+    .card__preview--bl { background: #5E4A38; display: flex; align-items: center; justify-content: center; }
+    .card__preview--bl .bl-center { position: relative; z-index: 2; text-align: center; }
+    /* метка «старт» — три полоски: берёста / метка / берёста */
+    .card__preview--bl .bl-mark { display: flex; justify-content: center; gap: 5px; margin: 0 auto 22px; }
+    .card__preview--bl .bl-mark i { display: block; width: 12px; height: 54px; background: #F4EFE6; }
+    .card__preview--bl .bl-mark i.m { background: #D8452B; }
+    .card__preview--bl .bl-logo { width: 150px; height: auto; display: block; margin: 0 auto; transition: transform 0.4s ease; }
+    .card:hover .card__preview--bl .bl-logo { transform: scale(1.05); }
+    .card__preview--bl .bl-sub { font-family: var(--font-ui); font-size: 9px; color: #D8452B; margin-top: 14px; letter-spacing: 0.1em; }
+    .card:hover .card__preview--bl { border-color: #D8452B; }
+    .card__preview--bl .card__fig { color: rgba(244,239,230,0.35); }
+    .card__preview--bl .card__idx { color: rgba(244,239,230,0.14); }
+    .card:hover .card__preview--bl .card__idx { color: rgba(216,69,43,0.7); }
+
+    /* универсальное превью — для любой новой записи в PROJECTS */
+    .card__preview--generic {
+      background-color: #0A0A0A;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 32px;
+    }
+    .card__preview--generic::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(46,199,150,0.10), transparent 60%);
+      pointer-events: none;
+    }
+    .card__preview--generic .gn-center { position: relative; z-index: 2; text-align: center; max-width: 100%; }
+    .card__preview--generic .gn-title {
+      font-family: var(--font-display); font-weight: 700;
+      font-size: clamp(22px, 2.6vw, 34px);
+      line-height: 1.1; letter-spacing: -0.02em;
+      color: #fff; opacity: 0.92;
+      overflow-wrap: anywhere;
+      transition: transform 0.4s ease;
+    }
+    .card:hover .card__preview--generic .gn-title { transform: scale(1.04); }
+    .card__preview--generic .gn-sub {
+      font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); margin-top: 12px;
+    }
+
+    /* подписи внутри превью */
+    .card__fig {
+      position: absolute;
+      left: 16px; bottom: 14px;
+      font-family: var(--font-ui);
+      font-size: 10px;
+      color: var(--text-dim);
+      z-index: 2;
+    }
+    .card__idx {
+      position: absolute;
+      right: 16px; top: 12px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 22px;
+      color: rgba(255,255,255,0.10);
+      z-index: 2;
+      transition: color 0.4s ease;
+    }
+    .card:hover .card__idx { color: rgba(46,199,150,0.5); }
+
+    /* бейдж «в работе» */
+    .card__badge {
+      position: absolute; left: 16px; top: 14px; z-index: 4;
+      font-family: var(--font-ui); font-size: 10px; letter-spacing: 0.05em;
+      padding: 3px 8px;
+      color: var(--accent); border: 1px solid var(--accent);
+      background: rgba(10,10,10,0.6);
+    }
+
+    .card__row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .card__category { font-family: var(--font-ui); font-size: 10px; color: var(--accent); text-transform: lowercase; }
+    .card__link {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: color 0.2s ease;
+    }
+    .card__link .arr { display: inline-block; transition: transform 0.25s var(--ease); }
+    .card:hover .card__link { color: var(--accent); }
+    .card:hover .card__link .arr { transform: translateX(5px); }
+    .card__name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 21px;
+      color: var(--text);
+      margin-top: 8px;
+      letter-spacing: -0.01em;
+      overflow-wrap: anywhere;
+    }
+    .card__desc {
+      font-family: var(--font-body);
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* без ссылки — приглушённая, не кликабельна */
+    .card--muted { pointer-events: none; }
+    .card--muted .card__preview { opacity: 0.45; }
+    .card--muted .card__name { color: rgba(255,255,255,0.28); }
+    .card--muted .card__category,
+    .card--muted .card__link,
+    .card--muted .card__desc { color: rgba(255,255,255,0.28); }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .footer { position: relative; z-index: 2; border-top: 1px solid var(--border); }
+    .footer__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 28px; padding-bottom: 28px; }
+    .footer__copy { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); }
+    .footer__copy b { color: var(--text); font-weight: 400; }
+    .footer__back { font-family: var(--font-ui); font-size: 11px; color: var(--text-muted); transition: color 0.2s ease; }
+    .footer__back:hover { color: var(--accent); }
+
+    /* ============================================================
+       PAGE TRANSITIONS
+       ============================================================ */
+    body { opacity: 1; transition: opacity 0.4s ease; }
+    body.page-exit { opacity: 0; pointer-events: none; }
+    .transition-overlay { position: fixed; inset: 0; z-index: 99999; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; }
+    .transition-overlay.active { opacity: 1; pointer-events: all; }
+
+    a:focus-visible, button:focus-visible, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    /* ============================================================
+       АДАПТИВ
+       ============================================================ */
+    @media (max-width: 900px) {
+      .lib-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      :root { --pad: 20px; }
+      .cursor, .cursor-ring { display: none !important; }
+      body, body * { cursor: auto !important; }
+      .frame, .readout { display: none; }
+      .lib-hero { padding: 120px 0 44px; }
+      /* чипсы — горизонтальный скролл */
+      .chips {
+        flex-wrap: nowrap; overflow-x: auto;
+        margin: 0 calc(var(--pad) * -1); padding: 0 var(--pad);
+        scrollbar-width: none;
+      }
+      .chips::-webkit-scrollbar { display: none; }
+      .card__preview { height: 200px; }
+      .card__name { font-size: 20px; }
+      .lib-grid { margin-bottom: 72px; }
+    }
+    @media (max-width: 480px) {
+      .lib-hero { padding-top: 104px; }
+      .lib-grid { gap: 28px 0; }
+      .card__preview { height: 180px; }
+      .card__preview--generic .gn-title { font-size: 22px; }
+      .card__preview--mr .mr-title { font-size: 22px; }
+      .card__preview--pr .pr-title { font-size: 20px; }
+      .card__preview--gmi .gmi-logo { width: 140px; }
+      .card__preview--ai .ai-line { font-size: 16px; }
+      .card__preview--ai .ai-caret { height: 16px; }
+      .card__row { flex-wrap: wrap; }
+      .footer__bar { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+      .cursor, .cursor-ring { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="frame" aria-hidden="true"></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <div class="readout" aria-hidden="true"><span>(scroll)</span><b id="pct">000%</b></div>
+
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <span class="cursor__box"></span>
+    <span class="cursor__coords"><span id="curX">X: 0</span><span id="curY">Y: 0</span></span>
+  </div>
+
+  <nav class="nav" id="nav">
+    <div class="container nav__inner">
+      <a href="index.html" class="nav__back">← WwolDEM</a>
+      <div class="nav__status">БИБЛИОТЕКА / 2026</div>
+    </div>
+  </nav>
+
+  <header class="lib-hero">
+    <div class="container">
+      <h1 class="lib-hero__title">Библиотека</h1>
+      <p class="lib-hero__count" id="libCount"></p>
+      <p class="lib-hero__text">Всё, что я сделал — от брендингов до платформ.</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="chips" id="chips" role="group" aria-label="Фильтр по категории"></div>
+      <ul class="lib-grid" id="libGrid"></ul>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__bar">
+      <div class="footer__copy">© 2026 — <b>Трифон Костенко</b></div>
+      <a href="index.html" class="footer__back">← Назад на WwolDEM</a>
+    </div>
+  </footer>
+
+  <script src="assets/projects-data.js"></script>
+  <script>
+    'use strict';
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var finePointer = window.matchMedia('(pointer: fine)').matches;
+
+    // ============================================================
+    // NAV scrolled + прогресс скролла + счётчик
+    // ============================================================
+    (function () {
+      var nav = document.getElementById('nav');
+      var bar = document.getElementById('progress');
+      var pct = document.getElementById('pct');
+      function onScroll() {
+        var y = window.scrollY;
+        nav.classList.toggle('scrolled', y > 60);
+        var h = document.documentElement.scrollHeight - window.innerHeight;
+        var p = h > 0 ? (y / h) : 0;
+        bar.style.width = (p * 100) + '%';
+        pct.textContent = String(Math.round(p * 100)).padStart(3, '0') + '%';
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      onScroll();
+    })();
+
+    // ============================================================
+    // Библиотека: счётчик, фильтры, плитки — всё из PROJECTS
+    // ============================================================
+    (function () {
+      var grid = document.getElementById('libGrid');
+      var chips = document.getElementById('chips');
+
+      function el(tag, cls, text) {
+        var node = document.createElement(tag);
+        if (cls) node.className = cls;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+
+      // счётчик в hero
+      var done = window.projectsDoneCount();
+      var wip = window.PROJECTS.length - done;
+      document.getElementById('libCount').textContent = done + ' ' + window.projectsWord(done) + ' · ' + wip + ' в работе';
+
+      // CSS-превью для известных id; всё остальное получает универсальную плитку
+      var PREVIEWS = {
+        mindstack: function (box) {
+          box.classList.add('card__preview--ms');
+          var img = el('img');
+          img.src = 'assets/mindstack/logo-white.png';
+          img.alt = 'Mind Stack';
+          box.appendChild(img);
+        },
+        marathon: function (box) {
+          box.classList.add('card__preview--mr');
+          var line = el('div', 'mr-line'); line.setAttribute('aria-hidden', 'true');
+          var c = el('div', 'mr-center');
+          c.appendChild(el('div', 'mr-title', 'MARATHON'));
+          c.appendChild(el('div', 'mr-sub', 'POSTER SERIES · v1.0—v3.7'));
+          box.appendChild(line); box.appendChild(c);
+        },
+        paulrand: function (box) {
+          box.classList.add('card__preview--pr');
+          var wm = el('div', 'pr-wm', 'R'); wm.setAttribute('aria-hidden', 'true');
+          var c = el('div', 'pr-center');
+          c.appendChild(el('div', 'pr-title', 'ПОЛ РЭНД'));
+          c.appendChild(el('div', 'pr-bar'));
+          c.appendChild(el('div', 'pr-sub', 'IBM · UPS · ABC · NeXT'));
+          box.appendChild(wm); box.appendChild(c);
+        },
+        museum: function (box) {
+          box.classList.add('card__preview--gmi');
+          var c = el('div', 'gmi-center');
+          var img = el('img', 'gmi-logo');
+          img.src = 'assets/museum/logo-white.png';
+          img.alt = 'ГМИ — Музей истории Санкт-Петербурга';
+          c.appendChild(img);
+          c.appendChild(el('div', 'gmi-sub', 'МУЗЕЙ ИСТОРИИ · СПБ'));
+          box.appendChild(c);
+        },
+        trifonai: function (box) {
+          box.classList.add('card__preview--ai');
+          var c = el('div', 'ai-center');
+          var line = el('div', 'ai-line', '$ trifonai --start');
+          line.appendChild(el('span', 'ai-caret'));
+          c.appendChild(line);
+          c.appendChild(el('div', 'ai-sub', 'ЛОКАЛЬНАЯ ИИ-ПЛАТФОРМА · v1.2 · 10 ИНСТРУМЕНТОВ'));
+          box.appendChild(c);
+        },
+        blaze: function (box) {
+          box.classList.add('card__preview--bl');
+          var c = el('div', 'bl-center');
+          var mark = el('div', 'bl-mark'); mark.setAttribute('aria-hidden', 'true');
+          mark.appendChild(el('i')); mark.appendChild(el('i', 'm')); mark.appendChild(el('i'));
+          c.appendChild(mark);
+          var img = el('img', 'bl-logo');
+          img.src = 'assets/blaze/logo-light.svg';
+          img.alt = 'blaze';
+          c.appendChild(img);
+          c.appendChild(el('div', 'bl-sub', 'ОДЕЖДА И СНАРЯЖЕНИЕ ДЛЯ ТУРИЗМА'));
+          box.appendChild(c);
+        }
+      };
+      function genericPreview(box, p) {
+        box.classList.add('card__preview--generic');
+        var c = el('div', 'gn-center');
+        c.appendChild(el('div', 'gn-title', p.title));
+        c.appendChild(el('div', 'gn-sub', p.cat + (p.year ? ' · ' + p.year : '')));
+        box.appendChild(c);
+      }
+
+      window.PROJECTS.forEach(function (p, i) {
+        var hasLink = !!(p.page || p.url);
+        var num = String(i + 1).padStart(2, '0');
+
+        var card = el(hasLink ? 'a' : 'div', 'card' + (hasLink ? '' : ' card--muted'));
+        card.dataset.id = p.id;
+        if (p.page) card.href = p.page;
+        if (p.url) {
+          card.href = p.url;
+          card.target = '_blank';
+          card.rel = 'noopener';
+        }
+        if (!hasLink) card.setAttribute('aria-disabled', 'true');
+
+        // превью
+        var box = el('div', 'card__preview');
+        (PREVIEWS[p.id] || function (b) { genericPreview(b, p); })(box);
+        box.appendChild(el('div', 'card__idx', num));
+        box.appendChild(el('div', 'card__fig', 'fig.' + num + ' — ' + p.cat.toLowerCase()));
+        if (p.status === 'wip') box.appendChild(el('span', 'card__badge', 'в работе'));
+        card.appendChild(box);
+
+        // строка «категория / ссылка»
+        var row = el('div', 'card__row');
+        row.appendChild(el('span', 'card__category', p.cat));
+        var link = el('span', 'card__link');
+        if (p.page) {
+          link.appendChild(document.createTextNode('смотреть кейс '));
+          link.appendChild(el('span', 'arr', '→'));
+        } else if (p.url) {
+          link.appendChild(document.createTextNode('открыть '));
+          link.appendChild(el('span', 'arr', '↗'));
+        } else {
+          link.textContent = 'скоро';
+        }
+        row.appendChild(link);
+        card.appendChild(row);
+
+        card.appendChild(el('h3', 'card__name', p.title));
+        card.appendChild(el('p', 'card__desc', p.blurb));
+
+        var li = el('li');
+        li.dataset.cat = p.cat;
+        li.appendChild(card);
+        grid.appendChild(li);
+      });
+
+      // чипсы: «Все» + категории в порядке появления в данных
+      var cats = ['Все'];
+      window.PROJECTS.forEach(function (p) {
+        if (cats.indexOf(p.cat) === -1) cats.push(p.cat);
+      });
+      cats.forEach(function (cat, i) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip' + (i === 0 ? ' is-active' : '');
+        btn.textContent = cat;
+        btn.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+        btn.addEventListener('click', function () {
+          chips.querySelectorAll('.chip').forEach(function (c) {
+            c.classList.toggle('is-active', c === btn);
+            c.setAttribute('aria-pressed', c === btn ? 'true' : 'false');
+          });
+          grid.querySelectorAll('li').forEach(function (li) {
+            li.hidden = i !== 0 && li.dataset.cat !== cat;
+          });
+        });
+        chips.appendChild(btn);
+      });
+    })();
+
+    // ============================================================
+    // Кастомный курсор: квадрат + кольцо + координаты
+    // ============================================================
+    (function () {
+      if (!finePointer || reduce) return;
+      var cur = document.getElementById('cursor');
+      var ring = document.getElementById('cursorRing');
+      var cx = document.getElementById('curX');
+      var cy = document.getElementById('curY');
+      cur.style.display = ring.style.display = 'block';
+
+      var mx = innerWidth / 2, my = innerHeight / 2;
+      var rx = mx, ry = my;
+
+      addEventListener('mousemove', function (e) {
+        mx = e.clientX; my = e.clientY;
+        cur.style.transform = 'translate(' + mx + 'px,' + my + 'px)';
+        cx.textContent = 'X: ' + mx;
+        cy.textContent = 'Y: ' + my;
+        var hover = !!e.target.closest('a, button, .card');
+        var onAccent = !!e.target.closest('.chip.is-active');
+        cur.classList.toggle('is-hover', hover);
+        ring.classList.toggle('is-hover', hover);
+        cur.classList.toggle('on-accent', onAccent);
+        ring.classList.toggle('on-accent', onAccent);
+      });
+
+      (function loop() {
+        rx += (mx - rx) * 0.18;
+        ry += (my - ry) * 0.18;
+        ring.style.transform = 'translate(' + rx + 'px,' + ry + 'px) translate(-50%, -50%)';
+        requestAnimationFrame(loop);
+      })();
+
+      document.addEventListener('mouseleave', function () { cur.style.opacity = ring.style.opacity = '0'; });
+      document.addEventListener('mouseenter', function () { cur.style.opacity = ring.style.opacity = ''; });
+    })();
+
+    // === PAGE TRANSITIONS ===
+    (function () {
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A', 'trifonai.html': '#0a0c0a', 'blaze.html': '#2B2B2B', 'library.html': '#0a0a0a' };
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C', 'trifonai.html': '#39ff14', 'blaze.html': '#D8452B', 'library.html': '#2ec796' };
+      var overlay = document.createElement('div');
+      overlay.className = 'transition-overlay';
+      overlay.style.background = '#0a0a0a';
+      document.body.appendChild(overlay);
+      var accentBar = document.createElement('div');
+      accentBar.style.cssText = ['position:absolute','bottom:0','left:0','width:0%','height:3px','background:#2ec796','transition:width 0.4s ease'].join(';');
+      overlay.appendChild(accentBar);
+      function navigateTo(href) {
+        var targetName = href.split('/').pop().split('?')[0] || 'index.html';
+        overlay.style.background = PAGE_COLORS[targetName] || '#0a0a0a';
+        accentBar.style.background = PAGE_ACCENT[targetName] || '#2ec796';
+        overlay.classList.add('active');
+        document.body.classList.add('page-exit');
+        requestAnimationFrame(function () { accentBar.style.width = '100%'; });
+        setTimeout(function () { window.location.href = href; }, 450);
+      }
+      document.addEventListener('click', function (e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        var href = link.getAttribute('href');
+        if (!href) return;
+        if (href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel') || link.hasAttribute('download') || link.getAttribute('target') === '_blank') return;
+        e.preventDefault();
+        navigateTo(href);
+      });
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) { overlay.classList.remove('active'); accentBar.style.width = '0%'; document.body.classList.remove('page-exit'); }
+      });
+    })();
+  </script>
+
+</body>
+</html>
