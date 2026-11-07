@@ -303,6 +303,16 @@
     .card__preview--bl .card__fig { color: rgba(244,239,230,0.35); }
     .card__preview--bl .card__idx { color: rgba(244,239,230,0.14); }
     .card:hover .card__preview--bl .card__idx { color: rgba(216,69,43,0.7); }
+    /* превью Neon Dark Fantasy — запечённый фон мода и луна */
+    .card__preview--ndf { background: radial-gradient(circle at 50% 46%, #2E1A5C 0%, #1B1240 38%, #0B0714 75%); display: flex; align-items: center; justify-content: center; }
+    .card__preview--ndf .ndf-center { position: relative; z-index: 2; text-align: center; }
+    .card__preview--ndf .ndf-moon { width: 150px; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 0 24px rgba(184,166,255,0.35)); transition: transform 0.6s ease; }
+    .card:hover .card__preview--ndf .ndf-moon { transform: rotate(-8deg) scale(1.06); }
+    .card__preview--ndf .ndf-sub { font-family: var(--font-ui); font-size: 9px; color: #E0A35A; margin-top: 12px; letter-spacing: 0.1em; }
+    .card:hover .card__preview--ndf { border-color: #E0A35A; }
+    .card__preview--ndf .card__fig { color: rgba(243,233,214,0.4); }
+    .card__preview--ndf .card__idx { color: rgba(243,233,214,0.14); }
+
 
     /* универсальное превью — для любой новой записи в PROJECTS */
     .card__preview--generic {
@@ -492,7 +502,7 @@
 
   <nav class="nav" id="nav">
     <div class="container nav__inner">
-      <a href="index.html" class="nav__back">← WwolDEM</a>
+      <a href="index.html#works" class="nav__back">← WwolDEM</a>
       <div class="nav__status">БИБЛИОТЕКА / 2026</div>
     </div>
   </nav>
@@ -621,6 +631,16 @@
           c.appendChild(img);
           c.appendChild(el('div', 'bl-sub', 'ОДЕЖДА И СНАРЯЖЕНИЕ ДЛЯ ТУРИЗМА'));
           box.appendChild(c);
+        },
+        neondarkfantasy: function (box) {
+          box.classList.add('card__preview--ndf');
+          var c = el('div', 'ndf-center');
+          var img = el('img', 'ndf-moon');
+          img.src = 'assets/neondarkfantasy/moon.webp';
+          img.alt = 'Луна мода Neon Dark Fantasy';
+          c.appendChild(img);
+          c.appendChild(el('div', 'ndf-sub', 'ВИЗУАЛЬНЫЙ МОД · ALE & TALE TAVERN'));
+          box.appendChild(c);
         }
       };
       function genericPreview(box, p) {
@@ -742,8 +762,8 @@
 
     // === PAGE TRANSITIONS ===
     (function () {
-      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A', 'trifonai.html': '#0a0c0a', 'blaze.html': '#2B2B2B', 'library.html': '#0a0a0a' };
-      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C', 'trifonai.html': '#39ff14', 'blaze.html': '#D8452B', 'library.html': '#2ec796' };
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A', 'trifonai.html': '#0a0c0a', 'blaze.html': '#2B2B2B', 'library.html': '#0a0a0a' , 'neondarkfantasy.html': '#0B0714'};
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C', 'trifonai.html': '#39ff14', 'blaze.html': '#D8452B', 'library.html': '#2ec796' , 'neondarkfantasy.html': '#E0A35A'};
       var overlay = document.createElement('div');
       overlay.className = 'transition-overlay';
       overlay.style.background = '#0a0a0a';

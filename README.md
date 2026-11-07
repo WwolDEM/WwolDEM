@@ -6,7 +6,7 @@
 |---|---|
 | `index.html` | главная |
 | `library.html` | библиотека проектов (плитки из `assets/projects-data.js`) |
-| `mindstack.html`, `marathon.html`, `paulrand.html`, `museum.html`, `trifonai.html`, `blaze.html` | страницы кейсов |
+| `mindstack.html`, `marathon.html`, `paulrand.html`, `museum.html`, `trifonai.html`, `blaze.html`, `neondarkfantasy.html` | страницы кейсов; у каждой своё вступление при открытии |
 | `assets/projects-data.js` | список проектов: библиотека и счётчики на главной считаются отсюда |
 | `assets/<проект>/` | картинки, логотипы и PDF кейсов |
 | `CNAME` | домен для GitHub Pages — не удалять |

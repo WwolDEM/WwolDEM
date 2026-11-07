@@ -13,7 +13,9 @@ window.PROJECTS = [
   { id:'trifonai', title:'TrifonAI', cat:'Платформа', year:2026, status:'done',
     page:'trifonai.html', blurb:'Персональная локальная ИИ-платформа' },
   { id:'blaze', title:'blaze', cat:'Брендинг', year:2026, status:'done',
-    page:'blaze.html', blurb:'Бренд одежды и снаряжения для туризма' }
+    page:'blaze.html', blurb:'Бренд одежды и снаряжения для туризма' },
+  { id:'neondarkfantasy', title:'Neon Dark Fantasy', cat:'Моддинг', year:2026, status:'wip',
+    page:'neondarkfantasy.html', blurb:'Визуальный мод для Ale & Tale Tavern в стиле Dark Fantasy' }
   // Новые записи дописывай сюда — плитка в библиотеке появится автоматически.
 ];
 

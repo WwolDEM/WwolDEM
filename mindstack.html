@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');</script>
   <title>Mind Stack — Case Study · WwolDEM</title>
   <meta property="og:title" content="Mind Stack — брендинг | WwolDEM">
   <meta property="og:description" content="Фирменный стиль AI-ассистента для разработчиков: логотип, цвет, типографика, паттерн.">
@@ -590,9 +591,47 @@
     body.page-exit { opacity: 0; pointer-events: none; }
     .transition-overlay { position: fixed; inset: 0; z-index: 99999; pointer-events: none; opacity: 0; transition: opacity 0.25s ease; }
     .transition-overlay.active { opacity: 1; pointer-events: all; }
+  
+    /* ============================================================
+       ВСТУПЛЕНИЕ (анимации ix-*: при клике, клавише или по таймеру доигрывают до конца)
+       ============================================================ */
+    .ix { display: none; }
+    html.intro .ix { display: block; position: fixed; inset: 0; z-index: 99998; pointer-events: none; }
+    html.intro-end .ix { display: none !important; }
+    @keyframes ix-up    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    /* без «to»: элемент проявляется до своей родной прозрачности (паттерн, фоновые надписи), а не до 1 */
+    @keyframes ix-fade  { from { opacity: 0; } }
+    @keyframes ix-blur  { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: none; } }
+    @keyframes ix-navin { from { transform: translateY(-100%); } to { transform: none; } }
+    @keyframes ix-out   { to { opacity: 0; } }
+
+    /* Mind Stack: сетка точек, скан-линия, заголовок «расшифровывается» */
+    html.intro .ix { background: #0A0A0A; animation: ix-ms-wipe .9s cubic-bezier(.7,0,.2,1) .55s both; }
+    .ix-dots { position: absolute; inset: 0; background: radial-gradient(rgba(255,255,255,0.28) 1px, transparent 1.4px) 0 0 / 18px 18px; }
+    html.intro .ix-dots { animation: ix-ms-dots .5s steps(4) both; }
+    .ix-scan { display: none; }
+    html.intro .ix-scan { display: block; position: fixed; left: 0; right: 0; top: 0; height: 2px; z-index: 99999; pointer-events: none;
+      background: #fff; box-shadow: 0 0 18px 4px rgba(255,255,255,0.55);
+      animation: ix-ms-scan .9s cubic-bezier(.7,0,.2,1) .55s both; }
+    html.intro-end .ix-scan { display: none; }
+    @keyframes ix-ms-dots { 0% { opacity: 0; } 25% { opacity: .9; } 50% { opacity: .3; } 100% { opacity: 1; } }
+    @keyframes ix-ms-wipe { from { clip-path: inset(0 0 0 0); } to { clip-path: inset(100% 0 0 0); } }
+    @keyframes ix-ms-scan { 0% { transform: translateY(0); opacity: 1; } 92% { opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
+    @keyframes ix-ms-logo { 0% { opacity: 0; filter: blur(12px) brightness(2.4); transform: scale(.9); } 60% { opacity: 1; filter: blur(0) brightness(1.6); } 100% { opacity: 1; filter: none; transform: none; } }
+    @keyframes ix-ms-show { from { opacity: 0; } to { opacity: 1; } }
+    html.intro .hero__pattern { animation: ix-fade 1.4s ease .8s both; }
+    html.intro .hero__logo { animation: ix-ms-logo 1s ease 1s both; }
+    html.intro .hero__title { animation: ix-ms-show .01s linear 1.15s both; }
+    html.intro .hero__subtitle { animation: ix-up .7s cubic-bezier(.22,1,.36,1) 1.95s both; }
+    html.intro .hero__inner .fu4 { animation: ix-up .7s cubic-bezier(.22,1,.36,1) 2.1s both; }
+    html.intro .hero__metrics { animation: ix-up .7s cubic-bezier(.22,1,.36,1) 2.25s both; }
+    html.intro .nav { animation: ix-navin .7s cubic-bezier(.22,1,.36,1) 1.4s both; }
   </style>
 </head>
 <body>
+
+  <div class="ix" aria-hidden="true"><i class="ix-dots"></i></div>
+  <i class="ix-scan" aria-hidden="true"></i>
 
   <!-- кастомный курсор: квадрат (мгновенно) + квадратное кольцо-хвост (lerp) -->
   <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
@@ -606,7 +645,7 @@
        ======================================================== -->
   <nav class="nav">
     <div class="container nav__inner">
-      <a href="index.html" class="nav__back">← WwolDEM</a>
+      <a href="index.html#works" class="nav__back">← WwolDEM</a>
       <div class="nav__center">MIND STACK — CASE STUDY</div>
       <div class="nav__status"><span class="dot">●</span> БРЕНДИНГ / 2026</div>
     </div>
@@ -958,6 +997,55 @@
           } catch (e) {}
         }
       }, { passive: true });
+    })();
+  </script>
+
+
+  <script>
+    // вступление: клик, клавиша или таймер — и все анимации ix-* доигрывают до конца
+    (function () {
+      var root = document.documentElement;
+
+      var title = document.querySelector('.hero__title');
+      var finalText = title ? title.textContent : '';
+      var stop = false;
+      if (title) title.setAttribute('aria-label', finalText);
+      if (title && root.classList.contains('intro')) {
+        var glyphs = '01<>/{}[]#$%&*+=ABCDEFGHJKLMNPQRSTUVWXYZ';
+        setTimeout(function () {
+          var start = performance.now(), dur = 900, n = finalText.length;
+          (function tick(now) {
+            if (stop) return;
+            var p = Math.min((now - start) / dur, 1), fixed = Math.floor(p * n), out = '';
+            for (var k = 0; k < n; k++) {
+              out += (k < fixed || finalText[k] === ' ') ? finalText[k] : glyphs[Math.random() * glyphs.length | 0];
+            }
+            title.textContent = p < 1 ? out : finalText;
+            if (p < 1) requestAnimationFrame(tick);
+          })(start);
+        }, 1150);
+      }
+
+      if (!root.classList.contains('intro')) return;
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        document.getAnimations().forEach(function (a) {
+          if ((a.animationName || '').indexOf('ix-') === 0) { try { a.finish(); } catch (e) {} }
+        });
+
+        stop = true;
+        if (title) title.textContent = finalText;
+
+        root.classList.add('intro-end');
+        document.dispatchEvent(new Event('intro:done'));
+        removeEventListener('pointerdown', finish);
+        removeEventListener('keydown', finish);
+      }
+      addEventListener('pointerdown', finish);
+      addEventListener('keydown', finish);
+      setTimeout(finish, 3200);
     })();
   </script>
 

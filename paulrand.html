@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');</script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -450,6 +451,45 @@
     .hero .container > *:nth-child(3) { animation-delay: 0.30s; }
     .hero .container > *:nth-child(4) { animation-delay: 0.40s; }
     .hero .container > *:nth-child(5) { animation-delay: 0.50s; }
+  
+    /* ============================================================
+       ВСТУПЛЕНИЕ (анимации ix-*: при клике, клавише или по таймеру доигрывают до конца)
+       ============================================================ */
+    .ix { display: none; }
+    html.intro .ix { display: block; position: fixed; inset: 0; z-index: 99998; pointer-events: none; }
+    html.intro-end .ix { display: none !important; }
+    @keyframes ix-up    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    /* без «to»: элемент проявляется до своей родной прозрачности (паттерн, фоновые надписи), а не до 1 */
+    @keyframes ix-fade  { from { opacity: 0; } }
+    @keyframes ix-blur  { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: none; } }
+    @keyframes ix-navin { from { transform: translateY(-100%); } to { transform: none; } }
+    @keyframes ix-out   { to { opacity: 0; } }
+
+    /* Пол Рэнд: фигуры влетают с отскоком, заголовок печатается машинкой */
+    @keyframes ix-pr-fly {
+      0%   { translate: var(--fx) var(--fy); scale: 0; rotate: -140deg; opacity: 0; }
+      60%  { translate: 0 0; scale: 1.15; rotate: 10deg; opacity: 1; }
+      80%  { scale: .94; rotate: -4deg; }
+      100% { translate: 0 0; scale: 1; rotate: 0deg; opacity: 1; }
+    }
+    @keyframes ix-pr-key { 0% { opacity: 0; transform: translateY(-0.09em); } 45% { opacity: 1; transform: translateY(0.035em); } 100% { opacity: 1; transform: none; } }
+    @keyframes ix-pr-rule { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    html.intro .hero > .shape { animation-name: ix-pr-fly, var(--float); animation-duration: .9s, var(--fdur); animation-timing-function: cubic-bezier(.3,.7,.3,1), ease-in-out; animation-iteration-count: 1, infinite; animation-fill-mode: both, none; }
+    html.intro .hero > .shape.f-a { --float: float; --fdur: 9s; }
+    html.intro .hero > .shape.f-b { --float: float; --fdur: 13s; }
+    html.intro .hero > .shape.f-c { --float: float; --fdur: 15s; }
+    html.intro .hero > .shape:nth-of-type(1) { --fx: 60vw;  --fy: -40vh; animation-delay: .1s, 0s; }
+    html.intro .hero > .shape:nth-of-type(2) { --fx: -50vw; --fy: 30vh;  animation-delay: .25s, 0s; }
+    html.intro .hero > .shape:nth-of-type(3) { --fx: 30vw;  --fy: 50vh;  animation-delay: .4s, 0s; }
+    html.intro .hero > .shape:nth-of-type(4) { --fx: 50vw;  --fy: 20vh;  animation-delay: .55s, 0s; }
+    html.intro .hero > .shape:nth-of-type(5) { --fx: -20vw; --fy: -50vh; animation-delay: .7s, 0s; }
+    html.intro .hero .container > *:nth-child(1) { animation: ix-up .5s ease .7s both; }
+    html.intro .hero .container > *:nth-child(2) { animation: none; opacity: 1; }
+    html.intro .hero__title .ch { display: inline-block; animation: ix-pr-key .16s ease both; animation-delay: calc(.95s + var(--i) * .15s); }
+    html.intro .hero .container > *:nth-child(3) { animation: ix-up .5s ease 2.05s both; }
+    html.intro .hero .container > *:nth-child(4) { animation: ix-pr-rule .6s cubic-bezier(.7,0,.2,1) 2.15s both; transform-origin: left; opacity: 1; }
+    html.intro .hero .container > *:nth-child(5) { animation: ix-up .5s ease 2.35s both; }
+    html.intro .nav { animation: ix-navin .6s cubic-bezier(.22,1,.36,1) .9s both; }
   </style>
 </head>
 <body>
@@ -466,7 +506,7 @@
        ======================================================== -->
   <nav class="nav">
     <div class="container nav__inner">
-      <a href="index.html" class="nav__back">← WwolDEM</a>
+      <a href="index.html#works" class="nav__back">← WwolDEM</a>
       <div class="nav__center">ПОЛ РЭНД — ПРЕЗЕНТАЦИЯ</div>
       <div class="nav__status"><span class="dot">●</span> ИССЛЕДОВАНИЕ / 2026</div>
     </div>
@@ -851,6 +891,59 @@
           } catch (e) {}
         }
       }, { passive: true });
+    })();
+  </script>
+
+
+  <script>
+    // вступление: клик, клавиша или таймер — и все анимации ix-* доигрывают до конца
+    (function () {
+      var root = document.documentElement;
+
+      // разбить текст элемента на буквы .ch с порядковым --i
+      function splitChars(el) {
+        var i = 0;
+        (function walk(node) {
+          Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+            if (n.nodeType === 3) {
+              var frag = document.createDocumentFragment();
+              n.textContent.split('').forEach(function (c) {
+                var sp = document.createElement('span');
+                sp.className = 'ch';
+                sp.setAttribute('aria-hidden', 'true');
+                sp.style.setProperty('--i', /\s/.test(c) ? i : i++);
+                sp.textContent = c;
+                frag.appendChild(sp);
+              });
+              node.replaceChild(frag, n);
+            } else if (n.nodeType === 1) { walk(n); }
+          });
+        })(el);
+      }
+
+      var prTitle = document.querySelector('.hero__title');
+      var prHTML = prTitle ? prTitle.innerHTML : '';
+      if (prTitle && root.classList.contains('intro')) { splitChars(prTitle); }
+
+      if (!root.classList.contains('intro')) return;
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        document.getAnimations().forEach(function (a) {
+          if ((a.animationName || '').indexOf('ix-') === 0) { try { a.finish(); } catch (e) {} }
+        });
+
+        // вернуть заголовку исходную разметку — конечный вид как до вступления
+        if (prTitle) prTitle.innerHTML = prHTML;
+        root.classList.add('intro-end');
+        document.dispatchEvent(new Event('intro:done'));
+        removeEventListener('pointerdown', finish);
+        removeEventListener('keydown', finish);
+      }
+      addEventListener('pointerdown', finish);
+      addEventListener('keydown', finish);
+      setTimeout(finish, 3200);
     })();
   </script>
 

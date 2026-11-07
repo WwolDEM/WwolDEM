@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');</script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>ГМИ СПб — Брендинг · WwolDEM</title>
   <meta property="og:title" content="ГМИ СПб — брендинг | WwolDEM">
@@ -288,6 +289,36 @@
       .hero__inner > * { opacity: 1 !important; }
       .cursor { display: none !important; }
     }
+  
+    /* ============================================================
+       ВСТУПЛЕНИЕ (анимации ix-*: при клике, клавише или по таймеру доигрывают до конца)
+       ============================================================ */
+    .ix { display: none; }
+    html.intro .ix { display: block; position: fixed; inset: 0; z-index: 99998; pointer-events: none; }
+    html.intro-end .ix { display: none !important; }
+    @keyframes ix-up    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    /* без «to»: элемент проявляется до своей родной прозрачности (паттерн, фоновые надписи), а не до 1 */
+    @keyframes ix-fade  { from { opacity: 0; } }
+    @keyframes ix-blur  { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: none; } }
+    @keyframes ix-navin { from { transform: translateY(-100%); } to { transform: none; } }
+    @keyframes ix-out   { to { opacity: 0; } }
+
+    /* ГМИ СПб: золотой контур крепости гравируется, знак вспыхивает золотом */
+    @keyframes ix-gm-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+    @keyframes ix-gm-oct  { 0% { opacity: .85; } 65% { opacity: .85; } 100% { opacity: .04; } }
+    /* логотип — непрозрачная картинка с фоном цвета страницы, поэтому только размытие и масштаб, без яркости */
+    @keyframes ix-gm-logo { 0% { opacity: 0; transform: scale(.88); filter: blur(8px); } 100% { opacity: 1; transform: none; filter: none; } }
+    @keyframes ix-gm-space { from { opacity: 0; letter-spacing: 0.9em; } to { opacity: 1; letter-spacing: 0.3em; } }
+    @keyframes ix-gm-line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    html.intro .hero__octagon { animation: ix-gm-oct 3s ease both; }
+    html.intro .hero__octagon polygon { stroke-dasharray: 1; animation: ix-gm-draw 1.7s cubic-bezier(.65,0,.35,1) .15s both; }
+    html.intro .hero__inner > *:nth-child(1) { animation: ix-gm-space 1.2s cubic-bezier(.22,1,.36,1) 1.15s both; }
+    html.intro .hero__inner > *:nth-child(2) { animation: ix-gm-logo 1.3s ease .95s both; }
+    html.intro .hero__inner > *:nth-child(3) { animation: ix-blur 1s ease 1.6s both; }
+    html.intro .hero__inner > *:nth-child(4) { animation: ix-gm-line .8s cubic-bezier(.7,0,.2,1) 2.1s both; opacity: 1; }
+    html.intro .hero__inner > *:nth-child(5) { animation: ix-up .6s ease 2.3s both; }
+    html.intro .hero__scroll { animation: ix-fade .8s ease 2.6s both, bob 2s ease-in-out 3.4s infinite; }
+    html.intro .nav { animation: ix-navin .7s cubic-bezier(.22,1,.36,1) 1.5s both; }
   </style>
 </head>
 <body>
@@ -303,7 +334,7 @@
        ======================================================== -->
   <nav class="nav">
     <div class="container nav__inner">
-      <a href="index.html">← WwolDEM</a>
+      <a href="index.html#works">← WwolDEM</a>
       <div class="nav__center">МУЗЕЙ ИСТОРИИ САНКТ-ПЕТЕРБУРГА</div>
       <div class="nav__status"><span class="dot">●</span> БРЕНДИНГ · 2026</div>
     </div>
@@ -314,7 +345,7 @@
        ======================================================== -->
   <header class="hero">
     <svg class="hero__octagon" viewBox="0 0 100 100" aria-hidden="true">
-      <polygon points="30,2 70,2 98,30 98,70 70,98 30,98 2,70 2,30" fill="none" stroke="#C9A84C" stroke-width="0.5" />
+      <polygon points="30,2 70,2 98,30 98,70 70,98 30,98 2,70 2,30" fill="none" stroke="#C9A84C" stroke-width="0.5" pathLength="1" />
     </svg>
     <div class="hero__inner">
       <span class="hero__eyebrow">Петропавловская крепость · 1703</span>
@@ -608,6 +639,32 @@
           } catch (e) {}
         }
       }, { passive: true });
+    })();
+  </script>
+
+
+  <script>
+    // вступление: клик, клавиша или таймер — и все анимации ix-* доигрывают до конца
+    (function () {
+      var root = document.documentElement;
+
+      if (!root.classList.contains('intro')) return;
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        document.getAnimations().forEach(function (a) {
+          if ((a.animationName || '').indexOf('ix-') === 0) { try { a.finish(); } catch (e) {} }
+        });
+
+        root.classList.add('intro-end');
+        document.dispatchEvent(new Event('intro:done'));
+        removeEventListener('pointerdown', finish);
+        removeEventListener('keydown', finish);
+      }
+      addEventListener('pointerdown', finish);
+      addEventListener('keydown', finish);
+      setTimeout(finish, 3400);
     })();
   </script>
 

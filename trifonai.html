@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');</script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>TrifonAI — локальная ИИ-платформа · WwolDEM</title>
   <meta property="og:title" content="TrifonAI — локальная ИИ-платформа | WwolDEM">
@@ -296,9 +297,61 @@
       .reveal { opacity: 1 !important; transform: none !important; }
       .caret { display: none !important; }
     }
+  
+    /* ============================================================
+       ВСТУПЛЕНИЕ (анимации ix-*: при клике, клавише или по таймеру доигрывают до конца)
+       ============================================================ */
+    .ix { display: none; }
+    html.intro .ix { display: block; position: fixed; inset: 0; z-index: 99998; pointer-events: none; }
+    html.intro-end .ix { display: none !important; }
+    @keyframes ix-up    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    /* без «to»: элемент проявляется до своей родной прозрачности (паттерн, фоновые надписи), а не до 1 */
+    @keyframes ix-fade  { from { opacity: 0; } }
+    @keyframes ix-blur  { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: none; } }
+    @keyframes ix-navin { from { transform: translateY(-100%); } to { transform: none; } }
+    @keyframes ix-out   { to { opacity: 0; } }
+
+    /* TrifonAI: лог загрузки системы, затем экран гаснет как монитор */
+    html.intro .ix { background: var(--t-bg); display: flex; align-items: center; justify-content: center; transform-origin: center; animation: ix-tf-off .45s cubic-bezier(.7,0,.3,1) 1.75s both; }
+    .ix-boot { font-family: var(--mono); font-size: clamp(12px, 1.4vw, 15px); line-height: 1.9; color: var(--t-white); width: min(560px, 86vw); }
+    .ix-boot span { display: block; opacity: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ix-boot .h { color: var(--t-dim); margin-bottom: 6px; }
+    .ix-boot b { color: var(--t-green); font-weight: 400; }
+    .ix-boot .go { color: var(--t-green); margin-top: 6px; }
+    .ix-boot .go i { display: inline-block; width: .55em; height: 1em; background: var(--t-green); vertical-align: -0.15em; margin-left: 4px; animation: caretBlink 530ms step-end infinite; }
+    @keyframes ix-tf-line { to { opacity: 1; } }
+    @keyframes ix-tf-off { 0% { opacity: 1; transform: none; } 60% { opacity: 1; transform: scale(1, .006); filter: brightness(3); } 100% { opacity: 0; transform: scale(0, .006); } }
+    html.intro .ix-boot span { animation: ix-tf-line .01s linear both; }
+    html.intro .ix-boot span:nth-child(1) { animation-delay: .05s; }
+    html.intro .ix-boot span:nth-child(2) { animation-delay: .22s; }
+    html.intro .ix-boot span:nth-child(3) { animation-delay: .38s; }
+    html.intro .ix-boot span:nth-child(4) { animation-delay: .54s; }
+    html.intro .ix-boot span:nth-child(5) { animation-delay: .72s; }
+    html.intro .ix-boot span:nth-child(6) { animation-delay: .9s; }
+    html.intro .ix-boot span:nth-child(7) { animation-delay: 1.08s; }
+    html.intro .ix-boot span:nth-child(8) { animation-delay: 1.3s; }
+    html.intro .hero__eyebrow { animation: ix-fade .6s ease 2.1s both; }
+    html.intro .hero__sub { animation: ix-up .7s ease 2.4s both; }
+    html.intro .stat { animation: ix-up .6s ease both; }
+    html.intro .stat:nth-child(1) { animation-delay: 2.55s; }
+    html.intro .stat:nth-child(2) { animation-delay: 2.65s; }
+    html.intro .stat:nth-child(3) { animation-delay: 2.75s; }
+    html.intro .stat:nth-child(4) { animation-delay: 2.85s; }
+    html.intro .nav { animation: ix-navin .6s cubic-bezier(.22,1,.36,1) 2.1s both; }
   </style>
 </head>
 <body>
+
+  <div class="ix" aria-hidden="true"><div class="ix-boot">
+    <span class="h">TrifonAI v1.2 · boot</span>
+    <span><b>[ ok ]</b> core/assistant.py</span>
+    <span><b>[ ok ]</b> memory/trifonai.db</span>
+    <span><b>[ ok ]</b> personality/system.md</span>
+    <span><b>[ ok ]</b> tools: 10 registered</span>
+    <span><b>[ ok ]</b> ollama · qwen3:8b</span>
+    <span><b>[ ok ]</b> ui/server.py · FastAPI + SSE</span>
+    <span class="go">&gt; открываю ретроспективу<i></i></span>
+  </div></div>
 
   <div class="caret" id="caret" aria-hidden="true"></div>
 
@@ -307,7 +360,7 @@
        ======================================================== -->
   <nav class="nav">
     <div class="container nav__inner">
-      <a href="index.html">← WwolDEM</a>
+      <a href="index.html#works">← WwolDEM</a>
       <div class="nav__center">TRIFONAI · RETROSPECTIVE</div>
       <div class="nav__status"><span class="dot">●</span> ИИ-ПЛАТФОРМА / 2026</div>
     </div>
@@ -622,13 +675,19 @@
       var caretEl = document.createElement('span');
       caretEl.className = 'tw-caret';
       el.appendChild(caretEl);
-      (function step() {
+      function step() {
         if (i <= text.length) {
           caretEl.insertAdjacentText('beforebegin', text.charAt(i - 1) || '');
           i++;
           setTimeout(step, 32);
         }
-      })();
+      }
+      // после лога загрузки печать начинается, когда вступление закончилось
+      if (document.documentElement.classList.contains('intro')) {
+        document.addEventListener('intro:done', step, { once: true });
+      } else {
+        step();
+      }
     })();
 
     // scroll-reveal
@@ -694,6 +753,32 @@
           } catch (e) {}
         }
       }, { passive: true });
+    })();
+  </script>
+
+
+  <script>
+    // вступление: клик, клавиша или таймер — и все анимации ix-* доигрывают до конца
+    (function () {
+      var root = document.documentElement;
+
+      if (!root.classList.contains('intro')) return;
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        document.getAnimations().forEach(function (a) {
+          if ((a.animationName || '').indexOf('ix-') === 0) { try { a.finish(); } catch (e) {} }
+        });
+
+        root.classList.add('intro-end');
+        document.dispatchEvent(new Event('intro:done'));
+        removeEventListener('pointerdown', finish);
+        removeEventListener('keydown', finish);
+      }
+      addEventListener('pointerdown', finish);
+      addEventListener('keydown', finish);
+      setTimeout(finish, 2250);
     })();
   </script>
 

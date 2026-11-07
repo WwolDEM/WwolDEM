@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Dark Fantasy — мод для Ale &amp; Tale Tavern · WwolDEM</title>
+  <meta property="og:title" content="Neon Dark Fantasy — визуальный мод | WwolDEM">
+  <meta property="og:description" content="Визуальный мод для Ale & Tale Tavern в стиле Dark Fantasy: процедурные текстуры, свет, небо с лицами. В работе.">
+  <meta property="og:image" content="https://wwoldem.ru/assets/og/og-image.png">
+  <meta property="og:url" content="https://wwoldem.ru/neondarkfantasy.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');</script>
+  <link rel="icon" type="image/png" href="assets/favicon/favicon.png">
+  <link rel="apple-touch-icon" href="assets/favicon/favicon.png">
+  <meta name="description" content="Neon Dark Fantasy — фанатский визуальный мод для Ale & Tale Tavern: стиль Dark Fantasy, процедурные текстуры, свет и небо. Кейс WwolDEM." />
+
+  <!-- Fonts: текст — Alegreya / Cormorant / IBM Plex Mono; заголовки — фрактура + устав (ниже, тоже с bunny) -->
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css?family=alegreya:400,400i,500,700|alegreya-sc:500,700|cormorant-garamond:500i,600,600i|ibm-plex-mono:400&display=swap" rel="stylesheet" />
+
+  <style>
+    /* заголовки: латиница — фрактура, кириллица — устав Pochaevsk;
+       в Pochaevsk нет «Я/я» — их берём из Triodion того же семейства */
+    @font-face { font-family: 'NDF Fraktur'; font-display: swap;
+      src: url(https://fonts.bunny.net/unifrakturmaguntia/files/unifrakturmaguntia-latin-400-normal.woff2) format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+    @font-face { font-family: 'NDF Ustav'; font-display: swap;
+      src: url(https://fonts.bunny.net/pochaevsk/files/pochaevsk-cyrillic-400-normal.woff2) format('woff2');
+      unicode-range: U+0400-042E, U+0430-044E, U+0450-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+    @font-face { font-family: 'NDF Ustav'; font-display: swap;
+      src: url(https://fonts.bunny.net/triodion/files/triodion-cyrillic-400-normal.woff2) format('woff2');
+      unicode-range: U+042F, U+044F; }
+
+    /* ============================================================
+       TOKENS — палитра из гайда Neon Dark Fantasy
+       ============================================================ */
+    :root {
+      --night:  #0B0714;
+      --indigo: #1B1240;
+      --violet: #2E1A5C;
+      --lav:    #B8A6FF;
+      --cream:  #F3E9D6;
+      --cream-dim: rgba(243,233,214,0.72);
+      --cream-mute: rgba(243,233,214,0.48);
+      --gold:   #E0A35A;
+      --line:   rgba(224,163,90,0.24);
+      --panel:  rgba(13,9,22,0.88);
+      --ember:  #FF7A1A;
+      --candle: #FFB35C;
+      --arcane: #26F2FF;
+      --acid:   #86FF2E;
+      --star:   #5A73FF;
+      --hex:    #E640FF;
+
+      --maxw: 1180px;
+      --pad:  48px;
+      --goth: 'NDF Fraktur', 'NDF Ustav', 'Alegreya', serif;
+      --body: 'Alegreya', Georgia, serif;
+      --sc:   'Alegreya SC', 'Alegreya', serif;
+      --it:   'Cormorant Garamond', Georgia, serif;
+      --mono: 'IBM Plex Mono', monospace;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--night);
+      color: var(--cream);
+      font-family: var(--body);
+      font-size: 17px;
+      line-height: 1.7;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    @media (pointer: fine) { body, body * { cursor: none !important; } }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button { font: inherit; color: inherit; background: none; border: 0; }
+
+    .container { position: relative; z-index: 2; width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad); }
+
+    /* секции лежат на настоящих текстурах мода, затемнённых под текст */
+    .sec { position: relative; padding: 120px 0; overflow: hidden; }
+    .sec--stone { background: linear-gradient(rgba(11,7,20,0.80), rgba(11,7,20,0.92)), url(assets/neondarkfantasy/bg_stone_dark.webp) center / cover; }
+    .sec--wood  { background: linear-gradient(rgba(11,7,20,0.78), rgba(11,7,20,0.90)), url(assets/neondarkfantasy/bg_wood.webp) center / cover; }
+    .sec--floor { background: linear-gradient(rgba(11,7,20,0.80), rgba(11,7,20,0.92)), url(assets/neondarkfantasy/bg_floor.webp) center / cover; }
+    .sec--sky   { background: linear-gradient(rgba(11,7,20,0.55), rgba(11,7,20,0.88)), url(assets/neondarkfantasy/bake_sky.webp) center / cover; }
+    .sec--plain { background: var(--night); }
+    .sec::after { /* римская цифра в углу, как в PDF */
+      content: attr(data-num);
+      position: absolute; right: 4%; bottom: -0.18em;
+      font-family: var(--it); font-style: italic; font-weight: 600;
+      font-size: clamp(120px, 18vw, 240px); line-height: 1;
+      color: rgba(224,163,90,0.07); pointer-events: none; z-index: 1;
+    }
+
+    .lbl { font-family: var(--sc); font-weight: 500; font-size: 13px; letter-spacing: 0.12em; color: var(--gold); }
+    .lbl::before { content: '✦ '; }
+    .h2 { font-family: var(--goth); font-weight: 400; font-size: clamp(36px, 4.8vw, 62px); line-height: 1.05; margin-top: 14px; color: var(--cream); }
+    .lead { font-family: var(--it); font-style: italic; font-weight: 500; font-size: clamp(19px, 1.9vw, 23px); line-height: 1.55; color: var(--cream); max-width: 62ch; margin-top: 22px; }
+    .txt { color: var(--cream-dim); max-width: 64ch; margin-top: 16px; }
+    .txt b, .lead b { color: var(--cream); font-weight: 700; }
+    .note { font-size: 14px; color: var(--cream-mute); margin-top: 18px; max-width: 70ch; }
+    .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+    /* блок кода не должен растягивать колонку шире экрана */
+    .grid2 > *, .three > *, .rules > *, .vtri > * { min-width: 0; }
+
+    .panel { background: var(--panel); border: 1px solid var(--line); padding: 24px 26px; position: relative; }
+    .panel h3 { font-family: var(--sc); font-weight: 700; font-size: 16px; letter-spacing: 0.04em; color: var(--cream); }
+    .panel p, .panel li { font-size: 15px; color: var(--cream-dim); line-height: 1.6; }
+    .panel p { margin-top: 8px; }
+    .panel ul { list-style: none; margin-top: 12px; }
+    .panel li { padding: 5px 0 5px 18px; position: relative; }
+    .panel li::before { content: '•'; position: absolute; left: 2px; color: var(--gold); }
+
+    .code { font-family: var(--mono); font-size: 13px; line-height: 1.75; background: rgba(5,3,10,0.9); border: 1px solid var(--line); padding: 18px 20px; color: var(--cream-dim); overflow-x: auto; white-space: pre; margin-top: 24px; }
+    .code .c { color: rgba(243,233,214,0.38); }
+    .code .k { color: var(--candle); }
+    .code .s { color: var(--lav); }
+
+    /* ============================================================
+       УКРАШЕНИЯ: медальоны у секций, разделитель, уголки панелей
+       ============================================================ */
+    .lbl--mark { display: flex; align-items: center; gap: 12px; }
+    .lbl--mark::before { content: none; }
+    .lbl--mark img { width: 40px; height: 40px; filter: drop-shadow(0 0 8px rgba(224,163,90,0.35)); }
+    .sec + .sec::before {
+      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: min(620px, 82%); height: 56px; z-index: 3; pointer-events: none;
+      background: url(assets/neondarkfantasy/orn-divider.webp) center / contain no-repeat;
+    }
+    .ornate::before, .ornate::after {
+      content: ''; position: absolute; width: 62px; height: 58px; z-index: 3; pointer-events: none;
+      background: url(assets/neondarkfantasy/orn-corner.webp) left top / contain no-repeat;
+    }
+    .ornate::before { top: -9px; left: -9px; }
+    .ornate::after { right: -9px; bottom: -9px; transform: scale(-1, -1); }
+
+    /* ============================================================
+       ВСТУПЛЕНИЕ: страница открывается, как глаз
+       ============================================================ */
+    .intro-lids { display: none; }
+    html.intro .intro-lids { display: block; position: fixed; inset: 0; z-index: 99998; pointer-events: none; }
+    .lid { position: absolute; left: 0; right: 0; height: 50.5%; background: radial-gradient(120% 140% at 50% 100%, #1B1240 0%, #0B0714 55%); }
+    .lid--t { top: 0; }
+    .lid--b { bottom: 0; background: radial-gradient(120% 140% at 50% 0%, #1B1240 0%, #0B0714 55%); }
+    .slit { position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; transform-origin: center;
+      background: linear-gradient(90deg, transparent, var(--candle) 30%, #fff3d6 50%, var(--candle) 70%, transparent);
+      box-shadow: 0 0 18px 4px rgba(255,179,92,0.7), 0 0 60px 10px rgba(255,122,26,0.35); }
+    html.intro .slit  { animation: slitOpen .5s cubic-bezier(.6,0,.2,1) both, slitFade .5s ease .55s both; }
+    html.intro .lid--t { animation: lidUp 1s cubic-bezier(.7,0,.2,1) .45s both; }
+    html.intro .lid--b { animation: lidDown 1s cubic-bezier(.7,0,.2,1) .45s both; }
+    @keyframes slitOpen { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @keyframes slitFade { to { opacity: 0; transform: scaleY(14); } }
+    @keyframes lidUp   { to { transform: translateY(-101%); } }
+    @keyframes lidDown { to { transform: translateY(101%); } }
+
+    /* небо проявляется из темноты */
+    html.intro .hero::before { animation: skyIn 2.6s cubic-bezier(.22,1,.36,1) .3s both; }
+    @keyframes skyIn { from { transform: scale(1.14); filter: brightness(.25) saturate(.6); } to { transform: none; filter: none; } }
+
+    /* буквы заголовка загораются по одной, как свечи */
+    html.intro .hero h1:not(.split) { opacity: 0; }
+    .hero h1 .ch { display: inline-block; white-space: pre; }
+    html.intro .hero h1 .ch { animation: ignite .9s ease both; animation-delay: calc(1s + var(--i) * 55ms); }
+    @keyframes ignite {
+      0%   { opacity: 0; filter: blur(8px); transform: translateY(12px) scale(1.15); text-shadow: none; }
+      35%  { opacity: 1; filter: blur(0); color: #fff3d6; text-shadow: 0 0 18px rgba(255,179,92,0.95), 0 0 42px rgba(255,122,26,0.7); }
+      100% { opacity: 1; transform: none; text-shadow: 0 0 0 rgba(255,122,26,0); }
+    }
+
+    /* остальное — по очереди */
+    html.intro .hero .lbl     { animation: riseIn .8s var(--ease) .9s both; }
+    html.intro .hero__lead    { animation: blurIn 1s var(--ease) 1.75s both; }
+    html.intro .hero__status  { animation: riseIn .8s var(--ease) 2.05s both; }
+    html.intro .tags span     { animation: riseIn .6s var(--ease) both; }
+    html.intro .tags span:nth-child(1) { animation-delay: 2.2s; }
+    html.intro .tags span:nth-child(2) { animation-delay: 2.27s; }
+    html.intro .tags span:nth-child(3) { animation-delay: 2.34s; }
+    html.intro .tags span:nth-child(4) { animation-delay: 2.41s; }
+    html.intro .tags span:nth-child(5) { animation-delay: 2.48s; }
+    html.intro .hero__moon    { animation: blurIn 1.4s var(--ease) 1.1s both; }
+    html.intro .nav           { animation: navIn .8s var(--ease) 1.5s both; }
+    @keyframes riseIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    @keyframes blurIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: none; } }
+    @keyframes navIn  { from { transform: translateY(-100%); } to { transform: none; } }
+
+    /* угольки поднимаются в шапке */
+    .hero__embers { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+    .hero__embers i { position: absolute; bottom: -10px; left: var(--x); width: var(--s); height: var(--s); border-radius: 50%;
+      background: radial-gradient(circle, #fff3d6 0%, var(--candle) 35%, rgba(255,122,26,0) 70%);
+      box-shadow: 0 0 6px rgba(255,122,26,0.8); opacity: 0;
+      animation: emberRise var(--t) linear var(--d) infinite; }
+    @keyframes emberRise {
+      0%   { opacity: 0; transform: translate(0, 0); }
+      12%  { opacity: .95; }
+      70%  { opacity: .55; }
+      100% { opacity: 0; transform: translate(var(--dx), -78vh); }
+    }
+
+    /* ============================================================
+       КУРСОР — тлеющий уголёк + координаты
+       ============================================================ */
+    .cursor { position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none; display: none; will-change: transform; }
+    .cursor__e { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--candle); box-shadow: 0 0 10px 3px rgba(255,122,26,0.65); transform: translate(-50%, -50%); transition: width .15s ease, height .15s ease; }
+    .cursor.is-hover .cursor__e { width: 16px; height: 16px; }
+    .cursor__xy { position: absolute; left: 14px; top: 4px; font-family: var(--sc); font-size: 10px; line-height: 1.3; color: var(--gold); white-space: nowrap; opacity: .8; }
+    .cursor__xy span { display: block; }
+
+    /* ============================================================
+       NAV
+       ============================================================ */
+    .nav { position: fixed; top: 0; left: 0; width: 100%; height: 56px; z-index: 100; background: rgba(11,7,20,0.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+    .nav__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .nav a, .nav__center, .nav__status { font-family: var(--sc); font-size: 13px; letter-spacing: 0.06em; color: var(--cream-mute); }
+    .nav a:hover { color: var(--gold); }
+    .nav__status { white-space: nowrap; }
+    .nav__status .dot { color: var(--ember); }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding: 110px 0 70px; overflow: hidden; background: var(--night); }
+    .hero::before { content: ''; position: absolute; inset: 0; z-index: 0;
+      background: linear-gradient(90deg, rgba(11,7,20,0.94) 0%, rgba(11,7,20,0.6) 48%, rgba(11,7,20,0) 75%), url(assets/neondarkfantasy/bake_cover.webp) right center / cover; }
+    .hero .container { z-index: 2; }
+    .hero__inner { display: grid; grid-template-columns: minmax(0, 620px); gap: 40px; align-items: center; }
+    .hero h1 { font-family: var(--goth); font-weight: 400; font-size: clamp(58px, 8.6vw, 128px); line-height: 0.95; margin-top: 18px; }
+    .hero h1 em { font-style: normal; color: var(--gold); display: block; }
+    .hero__lead { font-family: var(--it); font-style: italic; font-weight: 500; font-size: clamp(19px, 1.8vw, 23px); line-height: 1.55; max-width: 34em; margin-top: 26px; }
+    .hero__status { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 7px 14px; border: 1px solid rgba(255,122,26,0.5); font-family: var(--sc); font-size: 13px; letter-spacing: .05em; color: var(--candle); background: rgba(11,7,20,0.6); }
+    .hero__status i { width: 7px; height: 7px; border-radius: 50%; background: var(--ember); box-shadow: 0 0 8px var(--ember); animation: pulse 2.2s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: .35; } }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 26px; font-family: var(--sc); font-size: 13px; color: var(--gold); }
+    .tags span::before { content: '✦ '; opacity: .7; }
+    /* луна уже есть на фоне-обложке; отдельная картинка нужна только на телефоне */
+    .hero__moon { display: none; width: min(560px, 100%); justify-self: center; filter: drop-shadow(0 0 40px rgba(184,166,255,0.25)); animation: drift 9s ease-in-out infinite; }
+    @keyframes drift { 50% { transform: translateY(-10px) rotate(-1.5deg); } }
+
+    /* ============================================================
+       ЦИФРЫ И РОЛИ
+       ============================================================ */
+    .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .fact { background: var(--panel); border: 1px solid var(--line); padding: 22px 22px 20px; }
+    .fact b { display: block; font-family: var(--it); font-weight: 600; font-size: clamp(42px, 4.4vw, 58px); line-height: 1; color: var(--gold); }
+    .fact span { display: block; font-size: 14px; color: var(--cream-mute); margin-top: 10px; line-height: 1.45; }
+    .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .stack { font-family: var(--mono); font-size: 13px; color: var(--cream-dim); }
+
+    /* ============================================================
+       ОТКУДА СТИЛЬ
+       ============================================================ */
+    .layers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 40px; }
+    .layer b { font-family: var(--sc); color: var(--gold); font-weight: 700; font-size: 13px; letter-spacing: .06em; }
+
+    /* ============================================================
+       ПАЛИТРА
+       ============================================================ */
+    .pal-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+    .pal-row--6 { grid-template-columns: repeat(6, 1fr); }
+    .pal-h { font-family: var(--sc); font-size: 13px; letter-spacing: .06em; color: var(--cream-mute); margin-top: 34px; }
+    .sw { text-align: left; background: var(--panel); border: 1px solid var(--line); padding: 0 0 12px; transition: border-color .2s ease, transform .2s ease; }
+    .sw:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .sw i { display: block; height: 62px; background: var(--c); margin-bottom: 10px; }
+    .sw--glow i { box-shadow: inset 0 0 22px rgba(255,255,255,0.35); }
+    .sw b, .sw code, .sw small { display: block; padding: 0 12px; }
+    .sw b { font-family: var(--sc); font-weight: 700; font-size: 13px; }
+    .sw code { font-family: var(--mono); font-size: 12px; color: var(--cream-dim); }
+    .sw small { font-size: 12px; color: var(--cream-mute); line-height: 1.35; margin-top: 2px; font-style: italic; }
+    .sw.copied code { color: var(--acid); }
+    .ratio { display: flex; height: 18px; margin-top: 34px; border: 1px solid var(--line); overflow: hidden; }
+    .ratio i:nth-child(1) { flex: 60; background: linear-gradient(90deg, #0B0714, #1B1240, #2E1A5C); }
+    .ratio i:nth-child(2) { flex: 30; background: linear-gradient(90deg, #5C2A4C, #1F5F6F, #2F5A2A, #3C3F8A); }
+    .ratio i:nth-child(3) { flex: 10; background: linear-gradient(90deg, #FF7A1A, #FFB35C, #26F2FF, #86FF2E); }
+    .ratio-cap { display: flex; font-family: var(--sc); font-size: 12px; color: var(--cream-mute); margin-top: 8px; }
+    .ratio-cap span:nth-child(1) { flex: 60; } .ratio-cap span:nth-child(2) { flex: 30; } .ratio-cap span:nth-child(3) { flex: 10; text-align: right; white-space: nowrap; }
+
+    /* ============================================================
+       ТЕКСТУРЫ
+       ============================================================ */
+    .tex-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; }
+    .tex__img { position: relative; aspect-ratio: 1; border: 1px solid var(--line); overflow: hidden; background: #05030a; }
+    .tex__img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease), opacity .35s ease; }
+    .tex:hover .tex__img > img:first-child { transform: scale(1.06); }
+    .tex__emi { position: absolute; inset: 0; opacity: 0; }
+    .tex--emi:hover .tex__emi, .tex--emi:focus .tex__emi { opacity: 1; }
+    .tex__tag { position: absolute; left: 8px; bottom: 8px; z-index: 2; font-family: var(--sc); font-size: 11px; letter-spacing: .05em; padding: 2px 8px; background: rgba(11,7,20,0.8); color: var(--arcane); border: 1px solid rgba(38,242,255,0.4); opacity: 0; transition: opacity .3s ease; }
+    .tex--emi:hover .tex__tag, .tex--emi:focus .tex__tag { opacity: 1; }
+    .tex figcaption { margin-top: 10px; }
+    .tex figcaption b { display: block; font-family: var(--sc); font-weight: 700; font-size: 14px; }
+    .tex figcaption span { display: block; font-size: 13px; color: var(--cream-mute); font-style: italic; line-height: 1.4; }
+    .tex--emi .tex__img::after { content: '◐'; position: absolute; right: 8px; top: 6px; font-size: 13px; color: var(--arcane); opacity: .75; }
+
+    .toggle { display: inline-flex; border: 1px solid var(--line); margin-top: 28px; }
+    .toggle button { font-family: var(--sc); font-size: 13px; letter-spacing: .05em; padding: 9px 18px; color: var(--cream-mute); }
+    .toggle button.is-on { background: var(--gold); color: var(--night); }
+    .dirt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+    .dirt .tex__img img { position: absolute; inset: 0; transition: opacity .45s ease; }
+    .dirt .tex__img .is-grimy { opacity: 0; }
+    .dirt-grid.grimy .is-grimy { opacity: 1; }
+
+    /* ============================================================
+       ИГРА ИЗНУТРИ
+       ============================================================ */
+    .pipe { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 12px; align-items: center; margin-top: 30px; }
+    .pipe .panel { padding: 16px 18px; }
+    .pipe h3 { color: var(--arcane); }
+    .pipe em { font-style: normal; color: var(--gold); font-size: 22px; text-align: center; }
+    .dump { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    .dump td { padding: 10px 6px; border-bottom: 1px solid rgba(224,163,90,0.14); vertical-align: top; }
+    .dump td:first-child { color: var(--cream-mute); width: 42%; }
+    .dump td:last-child { font-family: var(--mono); font-size: 13px; color: var(--cream); }
+    .bars { margin-top: 18px; }
+    .bar { margin-top: 12px; font-size: 14px; color: var(--cream-dim); }
+    .bar i { display: block; height: 6px; margin-top: 6px; background: linear-gradient(90deg, #8a6a3e, var(--gold)); width: 0; transition: width 1.2s var(--ease); }
+    .bars.in .bar i { width: var(--w); }
+
+    .atlas { margin-top: 40px; border: 1px solid var(--line); background: #05030a; }
+    .atlas img { width: 100%; }
+    .cap { font-family: var(--sc); font-size: 12px; letter-spacing: .05em; color: var(--cream-mute); margin-top: 10px; }
+
+    .ba-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+    .ba { position: relative; aspect-ratio: 1; border: 1px solid var(--line); overflow: hidden; --pos: 50%; background: #05030a; }
+    .ba img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .ba__mod { clip-path: inset(0 0 0 var(--pos)); }
+    .ba__line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: var(--gold); box-shadow: 0 0 10px rgba(224,163,90,0.8); pointer-events: none; }
+    .ba__line::after { content: '⟷'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; background: var(--night); border: 1px solid var(--gold); color: var(--gold); font-size: 14px; display: grid; place-items: center; }
+    .ba input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; }
+    .ba__t { position: absolute; top: 8px; z-index: 2; font-family: var(--sc); font-size: 11px; padding: 2px 8px; background: rgba(11,7,20,0.78); color: var(--cream-dim); pointer-events: none; }
+    .ba__t--l { left: 8px; } .ba__t--r { right: 8px; color: var(--gold); }
+
+    /* ============================================================
+       НЕБО И ЗЕМЛЯ
+       ============================================================ */
+    .sky { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; align-items: end; }
+    .sky figure img { width: min(420px, 100%); margin: 0 auto; filter: drop-shadow(0 0 30px rgba(255,122,26,0.25)); transition: transform .8s var(--ease); }
+    .sky figure:hover img { transform: rotate(-6deg) scale(1.03); }
+    .sky figcaption { text-align: center; margin-top: 14px; }
+    .sky figcaption b { display: block; font-family: var(--sc); font-weight: 700; color: var(--gold); }
+    .sky figcaption span { font-size: 14px; color: var(--cream-dim); }
+    .fx { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 50px; }
+    .fx .panel { text-align: center; padding: 22px 18px; }
+    .fx .panel img { height: 150px; width: auto; margin: 0 auto 14px; object-fit: contain; }
+    .fx .vortex { animation: spin 40s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fx .bolt { animation: flash 7s steps(1) infinite; }
+    @keyframes flash { 0%, 86%, 92%, 100% { opacity: .9; } 88%, 90% { opacity: .15; } }
+
+    /* ============================================================
+       ВЕРСИИ
+       ============================================================ */
+    .vtabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 36px; border-bottom: 1px solid var(--line); }
+    .vtabs button { font-family: var(--it); font-weight: 600; font-size: 28px; line-height: 1; padding: 10px 18px 12px; color: var(--cream-mute); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .vtabs button.is-on { color: var(--gold); border-color: var(--gold); }
+    .vtabs button:hover { color: var(--cream); }
+    .vpanel { padding-top: 26px; }
+    .vpanel[hidden] { display: none; }
+    .vpanel h3 { font-family: var(--sc); font-weight: 700; font-size: 18px; color: var(--cream); }
+    .vtri { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
+    .vtri .panel b { font-family: var(--sc); font-size: 13px; letter-spacing: .05em; }
+    .ok b { color: var(--acid); } .bad b { color: #ff7a8a; } .out b { color: var(--gold); }
+    .shots { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(300px, 46%); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; margin-top: 20px; padding-bottom: 10px; scrollbar-color: var(--gold) transparent; }
+    .shots img { width: 100%; height: 260px; object-fit: cover; border: 1px solid var(--line); scroll-snap-align: start; transition: border-color .2s ease; }
+    .shots img:hover { border-color: var(--gold); }
+    .turn { margin-top: 40px; border-left: 3px solid var(--gold); }
+    .turn b { color: var(--cream); }
+    .turn em { font-style: normal; color: var(--arcane); }
+
+    /* ============================================================
+       СВЕТ / 0.7 / ПРАВИЛА
+       ============================================================ */
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 36px; }
+    .vals { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+    .vals th { text-align: left; font-family: var(--sc); font-weight: 500; font-size: 12px; letter-spacing: .06em; color: var(--gold); padding: 0 8px 10px 0; border-bottom: 1px solid var(--line); }
+    .vals td { padding: 9px 8px 9px 0; border-bottom: 1px solid rgba(224,163,90,0.12); color: var(--cream-dim); vertical-align: top; }
+    .vals td:nth-child(2) { font-family: var(--mono); font-size: 13px; color: var(--lav); white-space: nowrap; }
+    .tbl-wrap { overflow-x: auto; }
+
+    .maps { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .map { position: relative; aspect-ratio: 1; border: 1px solid var(--line); overflow: hidden; }
+    .map img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .35s ease; }
+    .maps[data-mode="color"] .m-color, .maps[data-mode="normal"] .m-normal, .maps[data-mode="gloss"] .m-gloss { opacity: 1; }
+    .abcd td:nth-child(2), .abcd td:nth-child(3) { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+    .abcd .r { color: var(--lav); } .abcd .d { color: var(--arcane); }
+
+    .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 36px; }
+    .rules .do { border-color: rgba(134,255,46,0.35); }
+    .rules .dont { border-color: rgba(255,122,138,0.35); }
+    .rules .do h3 { color: var(--acid); } .rules .dont h3 { color: #ff7a8a; }
+    .rules .do li::before { color: var(--acid); } .rules .dont li::before { color: #ff7a8a; }
+
+    .next .panel h3 em { font-family: var(--it); font-style: italic; font-weight: 600; color: var(--gold); font-size: 26px; display: block; margin-bottom: 4px; }
+
+    /* ============================================================
+       СКАЧАТЬ / FOOTER
+       ============================================================ */
+    .dl { text-align: center; }
+    .dl .h2 { margin-top: 10px; }
+    .btn { display: inline-block; margin-top: 30px; padding: 15px 38px; font-family: var(--sc); font-size: 14px; letter-spacing: .08em; color: var(--night); background: var(--gold); border: 1px solid var(--gold); transition: background .25s ease, color .25s ease; }
+    .btn:hover { background: transparent; color: var(--gold); }
+    .footer { background: #07040d; border-top: 1px solid var(--line); padding: 46px 0; position: relative; z-index: 2; }
+    .footer__grid { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+    .footer p { font-size: 14px; color: var(--cream-mute); max-width: 62ch; }
+    .footer p b { color: var(--cream-dim); font-weight: 500; }
+    .footer a { font-family: var(--sc); font-size: 13px; color: var(--cream-dim); }
+    .footer a:hover { color: var(--gold); }
+
+    /* лайтбокс для скриншотов */
+    .lb { position: fixed; inset: 0; z-index: 99990; background: rgba(5,3,10,0.94); display: none; align-items: center; justify-content: center; padding: 30px; }
+    .lb.open { display: flex; }
+    .lb img { max-width: 100%; max-height: 100%; border: 1px solid var(--line); }
+    [data-zoom] { cursor: zoom-in; }
+
+    /* reveal + переходы */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+    .reveal.in { opacity: 1; transform: none; }
+    body { opacity: 1; transition: opacity .4s ease; }
+    body.page-exit { opacity: 0; pointer-events: none; }
+    .transition-overlay { position: fixed; inset: 0; z-index: 99999; pointer-events: none; opacity: 0; transition: opacity .25s ease; }
+    .transition-overlay.active { opacity: 1; pointer-events: all; }
+    a:focus-visible, button:focus-visible, .tex:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+    /* ============================================================
+       АДАПТИВ
+       ============================================================ */
+    @media (max-width: 1000px) {
+      .facts { grid-template-columns: repeat(2, 1fr); }
+      .tex-grid { grid-template-columns: repeat(3, 1fr); }
+      .fx { grid-template-columns: repeat(2, 1fr); }
+      .pal-row--6 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      :root { --pad: 20px; }
+      body { font-size: 16px; }
+      .cursor { display: none !important; }
+      body, body * { cursor: auto !important; }
+      .sec { padding: 80px 0; }
+      .nav__center { display: none; }
+      .hero { min-height: auto; padding-top: 96px; }
+      .hero__inner, .grid2, .roles, .layers, .sky, .rules, .three, .vtri, .maps { grid-template-columns: minmax(0, 1fr); }
+      .hero::before { background: linear-gradient(rgba(11,7,20,0.55), rgba(11,7,20,0.92)), url(assets/neondarkfantasy/bake_cover.webp) 30% center / cover; }
+      .hero__moon { display: block; width: 78%; order: -1; }
+      .pal-row { grid-template-columns: repeat(2, 1fr); }
+      .pal-row--6 { grid-template-columns: repeat(2, 1fr); }
+      .tex-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .dirt-grid, .ba-grid { grid-template-columns: 1fr 1fr; }
+      .pipe { grid-template-columns: 1fr; }
+      .pipe em { transform: rotate(90deg); }
+      .shots { grid-auto-columns: 86%; }
+      .shots img { height: 210px; }
+      .vtabs button { font-size: 22px; padding: 8px 12px 10px; }
+      .lbl--mark img { width: 32px; height: 32px; }
+      .ornate::before, .ornate::after { width: 44px; height: 41px; }
+    }
+    @media (max-width: 480px) {
+      .facts { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .fact { padding: 16px; }
+      .ba-grid, .dirt-grid { grid-template-columns: 1fr; }
+      .fx { grid-template-columns: 1fr 1fr; }
+      .fx .panel img { height: 110px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      .cursor { display: none !important; }
+      .intro-lids, .hero__embers { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- вступление: золотая щель и раскрывающиеся «веки» -->
+  <div class="intro-lids" aria-hidden="true"><i class="lid lid--t"></i><i class="lid lid--b"></i><i class="slit"></i></div>
+
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <span class="cursor__e"></span>
+    <span class="cursor__xy"><span id="curX">X: 0</span><span id="curY">Y: 0</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a href="index.html#works">← WwolDEM</a>
+      <div class="nav__center">Neon Dark Fantasy · Ale &amp; Tale Tavern</div>
+      <div class="nav__status"><span class="dot">●</span> в работе · 2026</div>
+    </div>
+  </nav>
+
+  <!-- ========================================================
+       HERO
+       ======================================================== -->
+  <header class="hero">
+    <div class="hero__embers" id="embers" aria-hidden="true"></div>
+    <div class="container hero__inner">
+      <div>
+        <p class="lbl">Визуальный мод · Ale &amp; Tale Tavern</p>
+        <h1 aria-label="Neon Dark Fantasy">Neon Dark <em>Fantasy</em></h1>
+        <p class="hero__lead">Мне понравился игровой стиль Dark Fantasy: пререндеренная CGI-графика конца 90-х, ночь цвета индиго, свет из конкретных источников. Этот мод переносит его в Ale &amp; Tale Tavern — без правки файлов игры и без изменений геймплея.</p>
+        <div class="hero__status"><i></i>в работе · версия 0.7 собрана, проверка в игре впереди</div>
+        <div class="tags"><span>Арт-дирекшн</span><span>Процедурные текстуры</span><span>Свет</span><span>Unity-моддинг</span><span>C# / BepInEx</span></div>
+      </div>
+      <img class="hero__moon" src="assets/neondarkfantasy/moon.webp" alt="Луна мода: половина — звёздная ночь, половина — кратеры, огненный и ледяной глаз" />
+    </div>
+  </header>
+
+  <!-- ========================================================
+       ЦИФРЫ
+       ======================================================== -->
+  <section class="sec sec--plain">
+    <div class="container">
+      <div class="facts reveal">
+        <div class="fact"><b>7</b><span>версий мода за неделю: от 0.1 до 0.7</span></div>
+        <div class="fact"><b>35+</b><span>процедурных текстур, сгенерированных кодом</span></div>
+        <div class="fact"><b>3 275</b><span>текстур игры проанализировано дампером</span></div>
+        <div class="fact"><b>~250</b><span>текстур мод перекрашивает на лету</span></div>
+      </div>
+      <div class="roles reveal">
+        <div class="panel">
+          <h3>Роли</h3>
+          <p><b style="color:var(--cream)">Трифон / WwolDEM</b> — идея, арт-дирекшн, референсы, тесты в игре, солнце и луна.</p>
+          <p><b style="color:var(--cream)">Claude (Anthropic)</b> — код плагина, процедурные текстуры, техническое исследование игры.</p>
+        </div>
+        <div class="panel">
+          <h3>Стек</h3>
+          <p class="stack">Unity 2022.3 · URP · BepInEx 5 · C# (~1 600 строк) · Python / NumPy (~1 000 строк генераторов) · рефлексия к URP Volume без Harmony</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       01 — ОТКУДА СТИЛЬ
+       ======================================================== -->
+  <section class="sec sec--stone" data-num="I">
+    <div class="container grid2">
+      <div class="reveal">
+        <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-6.webp" alt="" />01 · Откуда стиль</p>
+        <h2 class="h2">Понравился стиль — разобрал его по частям</h2>
+        <p class="lead">Отправная точка — два коротких ролика <b>.dark.reverie</b>: луна с лицом над замком, гора, которая открывает глаз, светящаяся дорога к замку под спиралью звёзд.</p>
+        <p class="txt">Стиль разобран в двух документах: гайд Neon Dark Fantasy (10 страниц) и исследование визуального языка по двум роликам (26 страниц). Вывод исследования: слова «dark fantasy» мало — под ним уживаются и реалистичный хоррор, и руины, и сказка. Рабочее название точнее — <b>гротескное ретро-CGI-фэнтези</b>.</p>
+        <p class="note">Ролики — чужие работы, поэтому здесь они описаны словами. Все изображения ниже созданы в проекте или сняты в игре с модом.</p>
+      </div>
+      <div class="layers reveal">
+        <div class="panel layer"><b>Ранняя CGI-материальность</b><p>Вещи выглядят собранными из вещества: жирный рельеф, горячие блики, грязь в щелях.</p></div>
+        <div class="panel layer"><b>Цветная магия</b><p>Цвет — признак действующей магии: порталы, котлы, светящиеся тропы, фиолетовое небо.</p></div>
+        <div class="panel layer"><b>Живое окружение</b><p>У мира есть лица и взгляд: светила, вывески, входы. Но не у каждого камня — иначе это орнамент.</p></div>
+        <div class="panel layer"><b>Постановка</b><p>Опора взгляда впереди, главное действие в середине, огромное чудо вдали.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       02 — ПАЛИТРА
+       ======================================================== -->
+  <section class="sec sec--plain" data-num="II">
+    <div class="container">
+      <div class="reveal">
+        <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-2.webp" alt="" />02 · Палитра из гайда</p>
+        <h2 class="h2">Цвет по ролям</h2>
+        <p class="lead">Три слоя: тёмная база, насыщенные материалы и узкий набор светящихся цветов, которые появляются только на источниках света и магии.</p>
+        <p class="note">Нажми на цвет — HEX скопируется.</p>
+      </div>
+      <div class="reveal">
+        <p class="pal-h">База и ночь</p>
+        <div class="pal-row">
+          <button class="sw" style="--c:#0B0714" data-hex="#0B0714"><i></i><b>Night</b><code>#0B0714</code><small>Глубина, фон</small></button>
+          <button class="sw" style="--c:#1B1240" data-hex="#1B1240"><i></i><b>Indigo</b><code>#1B1240</code><small>Тени, ночное небо</small></button>
+          <button class="sw" style="--c:#2E1A5C" data-hex="#2E1A5C"><i></i><b>Royal Violet</b><code>#2E1A5C</code><small>Туман, дымка</small></button>
+          <button class="sw" style="--c:#B8A6FF" data-hex="#B8A6FF"><i></i><b>Lavender Moon</b><code>#B8A6FF</code><small>Лунный свет, блики</small></button>
+        </div>
+        <p class="pal-h">Материалы</p>
+        <div class="pal-row">
+          <button class="sw" style="--c:#5C2A4C" data-hex="#5C2A4C"><i></i><b>Plum Wood</b><code>#5C2A4C</code><small>Дерево, кора</small></button>
+          <button class="sw" style="--c:#1F5F6F" data-hex="#1F5F6F"><i></i><b>Teal Wood</b><code>#1F5F6F</code><small>Балки, черепица</small></button>
+          <button class="sw" style="--c:#2F5A2A" data-hex="#2F5A2A"><i></i><b>Moss Stone</b><code>#2F5A2A</code><small>Кладка, мох</small></button>
+          <button class="sw" style="--c:#3C3F8A" data-hex="#3C3F8A"><i></i><b>Blue Slate</b><code>#3C3F8A</code><small>Камень, пещеры</small></button>
+        </div>
+        <p class="pal-h">Свечение — только для источников</p>
+        <div class="pal-row pal-row--6">
+          <button class="sw sw--glow" style="--c:#FF7A1A" data-hex="#FF7A1A"><i></i><b>Ember</b><code>#FF7A1A</code><small>Угли, огонь</small></button>
+          <button class="sw sw--glow" style="--c:#FFB35C" data-hex="#FFB35C"><i></i><b>Candle</b><code>#FFB35C</code><small>Свечи, окна</small></button>
+          <button class="sw sw--glow" style="--c:#26F2FF" data-hex="#26F2FF"><i></i><b>Arcane</b><code>#26F2FF</code><small>Магия, руны</small></button>
+          <button class="sw sw--glow" style="--c:#86FF2E" data-hex="#86FF2E"><i></i><b>Acid</b><code>#86FF2E</code><small>Яд, внешние стены</small></button>
+          <button class="sw sw--glow" style="--c:#5A73FF" data-hex="#5A73FF"><i></i><b>Star Blue</b><code>#5A73FF</code><small>Цветы, звёзды</small></button>
+          <button class="sw sw--glow" style="--c:#E640FF" data-hex="#E640FF"><i></i><b>Hex</b><code>#E640FF</code><small>Колдовство, грибы</small></button>
+        </div>
+        <div class="ratio" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="ratio-cap"><span>≈ 60% тёмная база</span><span>30% материалы</span><span>10% свечение</span></div>
+        <p class="note">Правило выведено на тестах: если светящегося больше 10%, кадр превращается в кашу и ничего не читается.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       03 — ТЕКСТУРЫ
+       ======================================================== -->
+  <section class="sec sec--wood" data-num="III">
+    <div class="container">
+      <div class="grid2 reveal">
+        <div>
+          <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-1.webp" alt="" />03 · Лаборатория текстур</p>
+          <h2 class="h2">Ни одного пикселя руками</h2>
+        </div>
+        <div>
+          <p class="txt" style="margin-top:0">Каждая текстура — Python-генератор: фрактальный шум, диаграммы Вороного и фальшивое бамп-освещение с горячим бликом дают тот самый «пластиковый» CGI-вид. Все поверхности бесшовные. У светящихся есть отдельная маска свечения — <b>наведи на плитку со значком ◐</b>, чтобы увидеть, что именно светится в игре.</p>
+          <div class="code"><span class="c"># швы между камнями светятся изнутри</span>
+f1, f2, cid = <span class="k">voronoi</span>(cells=<span class="s">49</span>)
+edge = f2 - f1
+seam = <span class="k">clip</span>(1 - edge*<span class="s">22</span>) ** <span class="s">1.5</span>
+emis = <span class="k">glow</span>(seam, radius=<span class="s">5</span>) * CYAN</div>
+        </div>
+      </div>
+
+      <div class="tex-grid reveal">
+        <figure class="tex tex--emi" tabindex="0"><div class="tex__img"><img src="assets/neondarkfantasy/tex_cobble_arcane.webp" alt="Текстура Cobble Arcane" loading="lazy" /><img class="tex__emi" src="assets/neondarkfantasy/emi_cobble_arcane.webp" alt="" loading="lazy" /><span class="tex__tag">маска свечения</span></div><figcaption><b>Cobble Arcane</b><span>Камень в циановой магии</span></figcaption></figure>
+        <figure class="tex tex--emi" tabindex="0"><div class="tex__img"><img src="assets/neondarkfantasy/tex_cobble_ember.webp" alt="Текстура Cobble Ember" loading="lazy" /><img class="tex__emi" src="assets/neondarkfantasy/emi_cobble_ember.webp" alt="" loading="lazy" /><span class="tex__tag">маска свечения</span></div><figcaption><b>Cobble Ember</b><span>Лава в швах</span></figcaption></figure>
+        <figure class="tex tex--emi" tabindex="0"><div class="tex__img"><img src="assets/neondarkfantasy/tex_slime_acid.webp" alt="Текстура Slime Acid" loading="lazy" /><img class="tex__emi" src="assets/neondarkfantasy/emi_slime_acid.webp" alt="" loading="lazy" /><span class="tex__tag">маска свечения</span></div><figcaption><b>Slime Acid</b><span>Ядовитая слизь, пузыри</span></figcaption></figure>
+        <figure class="tex tex--emi" tabindex="0"><div class="tex__img"><img src="assets/neondarkfantasy/tex_mushroom_cap.webp" alt="Текстура Mushroom Cap" loading="lazy" /><img class="tex__emi" src="assets/neondarkfantasy/emi_mushroom_cap.webp" alt="" loading="lazy" /><span class="tex__tag">маска свечения</span></div><figcaption><b>Mushroom Cap</b><span>Светящиеся пятна</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_planks_violet.webp" alt="Текстура Planks Violet" loading="lazy" /></div><figcaption><b>Planks Violet</b><span>Сливовые доски, мох</span></figcaption></figure>
+        <figure class="tex tex--emi" tabindex="0"><div class="tex__img"><img src="assets/neondarkfantasy/tex_glowflower_ground.webp" alt="Текстура Glowflower" loading="lazy" /><img class="tex__emi" src="assets/neondarkfantasy/emi_glowflower_ground.webp" alt="" loading="lazy" /><span class="tex__tag">маска свечения</span></div><figcaption><b>Glowflower</b><span>Трава с синими искрами</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_sky_violet_storm.webp" alt="Текстура Violet Storm" loading="lazy" /></div><figcaption><b>Violet Storm</b><span>Небо с молниями</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_sky_star_spiral.webp" alt="Текстура Star Spiral" loading="lazy" /></div><figcaption><b>Star Spiral</b><span>Звёздный вихрь</span></figcaption></figure>
+      </div>
+      <p class="note">Первая пачка. Реакция после первого просмотра была простой: «это прям оно».</p>
+
+      <div class="grid2 reveal" style="margin-top:90px">
+        <div>
+          <p class="lbl">03 · Таверна и мир</p>
+          <h2 class="h2">Вторая пачка и «грязный» проход</h2>
+        </div>
+        <div>
+          <p class="txt" style="margin-top:0">Первая версия второй пачки получилась слишком чистой и «новенькой». Отдельный проход добавил всем материалам грязь: копоть забивается в углубления, пятна и потёки воды, потёртости на выступах, мелкое зерно и лёгкая десатурация.</p>
+        </div>
+      </div>
+      <div class="tex-grid reveal">
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_wall_mossy_stone.webp" alt="Mossy Stone" loading="lazy" /></div><figcaption><b>Mossy Stone</b><span>Бугристая моховая кладка</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_wood_beam_teal.webp" alt="Teal Beam" loading="lazy" /></div><figcaption><b>Teal Beam</b><span>Лакированные балки</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_candle_wax.webp" alt="Candle Wax" loading="lazy" /></div><figcaption><b>Candle Wax</b><span>Оплывший воск</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_copper_hammered.webp" alt="Hammered Copper" loading="lazy" /></div><figcaption><b>Hammered Copper</b><span>Медь с патиной</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_glass_potion.webp" alt="Potion Glass" loading="lazy" /></div><figcaption><b>Potion Glass</b><span>Стекло зелий</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_roof_tiles_teal.webp" alt="Teal Tiles" loading="lazy" /></div><figcaption><b>Teal Tiles</b><span>Глазурованная черепица</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_bark_gnarly.webp" alt="Gnarly Bark" loading="lazy" /></div><figcaption><b>Gnarly Bark</b><span>Кривая фиолетовая кора</span></figcaption></figure>
+        <figure class="tex"><div class="tex__img"><img src="assets/neondarkfantasy/tex_water_violet.webp" alt="Violet Water" loading="lazy" /></div><figcaption><b>Violet Water</b><span>Зеркальная вода</span></figcaption></figure>
+      </div>
+
+      <div class="reveal">
+        <div class="toggle" role="group" aria-label="Чистая версия или после грязи">
+          <button type="button" class="is-on" data-dirt="clean">Чисто</button>
+          <button type="button" data-dirt="grimy">После грязи</button>
+        </div>
+        <div class="dirt-grid" id="dirtGrid">
+          <figure class="tex dirt"><div class="tex__img"><img src="assets/neondarkfantasy/clean_wall_mossy_stone.webp" alt="Mossy Stone, чистая версия" loading="lazy" /><img class="is-grimy" src="assets/neondarkfantasy/grimy_wall_mossy_stone.webp" alt="Mossy Stone после грязи" loading="lazy" /></div><figcaption><b>Mossy Stone</b></figcaption></figure>
+          <figure class="tex dirt"><div class="tex__img"><img src="assets/neondarkfantasy/clean_copper_hammered.webp" alt="Hammered Copper, чистая версия" loading="lazy" /><img class="is-grimy" src="assets/neondarkfantasy/grimy_copper_hammered.webp" alt="Hammered Copper после грязи" loading="lazy" /></div><figcaption><b>Hammered Copper</b></figcaption></figure>
+          <figure class="tex dirt"><div class="tex__img"><img src="assets/neondarkfantasy/clean_bark_gnarly.webp" alt="Gnarly Bark, чистая версия" loading="lazy" /><img class="is-grimy" src="assets/neondarkfantasy/grimy_bark_gnarly.webp" alt="Gnarly Bark после грязи" loading="lazy" /></div><figcaption><b>Gnarly Bark</b></figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       04 — ИГРА ИЗНУТРИ
+       ======================================================== -->
+  <section class="sec sec--stone" data-num="IV">
+    <div class="container">
+      <div class="grid2 reveal">
+        <div>
+          <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-5.webp" alt="" />04 · Инженерия</p>
+          <h2 class="h2">Вскрыть игру, не трогая её файлы</h2>
+          <p class="txt">Чтобы рисовать прицельно, нужно знать, из чего собрана игра. Для этого написан плагин-дампер: он ничего не меняет и только читает, какие материалы, текстуры и источники света загружены в каждой сцене.</p>
+          <div class="pipe">
+            <div class="panel"><h3>BepInEx 5</h3><p>загрузчик модов для Unity-игр на Mono</p></div><em>→</em>
+            <div class="panel"><h3>Дампер</h3><p>CSV материалов, текстур и света по сценам</p></div><em>→</em>
+            <div class="panel"><h3>Анализ</h3><p>шейдеры, слоты, атласы, раскладки</p></div>
+          </div>
+          <p class="note">Первая версия дампера подвешивала игру: она сохраняла 3 000 картинок в одном кадре. Версия 1.1 раскладывает сохранение по кадрам, не больше 6 мс за кадр.</p>
+        </div>
+        <div class="panel ornate">
+          <h3>Что показал дамп</h3>
+          <table class="dump">
+            <tr><td>Unity</td><td>2022.3.62 · URP</td></tr>
+            <tr><td>Сцены</td><td>MMH (меню) · Playtest (весь мир)</td></tr>
+            <tr><td>Материалов в мире</td><td>715 из 1 817 загруженных</td></tr>
+            <tr><td>Текстур</td><td>3 275</td></tr>
+            <tr><td>Источников света</td><td>~140, почти все белые</td></tr>
+            <tr><td>Туман</td><td>серый, ExponentialSquared</td></tr>
+          </table>
+          <h3 style="margin-top:22px">Шейдеры мира</h3>
+          <div class="bars" id="bars">
+            <div class="bar">Polyart Dreamscape · Tiling POM — 187<i style="--w:100%"></i></div>
+            <div class="bar">URP / Lit — 174<i style="--w:93%"></i></div>
+            <div class="bar">Polyart · Surface — 94<i style="--w:50%"></i></div>
+            <div class="bar">Polyart · Trim POM — 83<i style="--w:44%"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2 reveal" style="margin-top:90px">
+        <div>
+          <p class="lbl">04 · Перекраска на лету</p>
+          <h2 class="h2">Атласы нельзя заменить, их можно перекрасить</h2>
+        </div>
+        <div>
+          <p class="txt" style="margin-top:0">Столы, бочки, свечи нарисованы атласами: все детали предмета на одной картинке. Бесшовная текстура превратила бы их в кашу. Поэтому мод читает каждую текстуру с видеокарты, по имени определяет, что это (дерево, камень, металл, листва), и переводит её в палитру стиля через градиентную карту. Раскладка атласа сохраняется; около 250 текстур перекрашиваются за первые секунды после загрузки сейва, работа разложена по кадрам.</p>
+          <div class="code">R(<span class="s">"Bark|Trunk|Logs"</span>,  PlumWood,  Glow.None),
+R(<span class="s">"Plaster|Wall"</span>,     MossStone, Glow.Seams),
+R(<span class="s">"Cave|Stone|Floor"</span>, BlueSlate, Glow.None),
+R(<span class="s">"Lantern|Torch"</span>,    Copper,    Glow.Bright),</div>
+        </div>
+      </div>
+      <figure class="atlas reveal"><img src="assets/neondarkfantasy/atlas_restyle.webp" alt="12 реальных текстур игры: оригинал и результат перекраски" loading="lazy" data-zoom /></figure>
+      <p class="cap">Оригинал игры → результат перекраски, 12 реальных текстур · нажми, чтобы открыть крупно</p>
+
+      <div class="reveal" style="margin-top:90px">
+        <p class="lbl">04 · Подмена</p>
+        <h2 class="h2">Было → стало</h2>
+        <p class="txt">Двигай ползунок. Слева родные текстуры игры, справа текстуры мода, подключённые по точным игровым именам. Найти эти имена получилось только благодаря дампу: первая попытка подмены промахнулась мимо половины поверхностей.</p>
+      </div>
+      <div class="ba-grid reveal">
+        <div><div class="ba"><img src="assets/neondarkfantasy/orig_Stonewall.webp" alt="Каменная кладка в игре" loading="lazy" /><img class="ba__mod" src="assets/neondarkfantasy/mod_Stonewall.webp" alt="Каменная кладка в моде" loading="lazy" /><span class="ba__t ba__t--l">игра</span><span class="ba__t ba__t--r">мод</span><span class="ba__line"></span><input type="range" min="0" max="100" value="50" aria-label="Каменная кладка: сравнение" /></div><p class="cap">Каменная кладка · в 0.7 рельефный сланец</p></div>
+        <div><div class="ba"><img src="assets/neondarkfantasy/orig_Planks.webp" alt="Деревянный пол в игре" loading="lazy" /><img class="ba__mod" src="assets/neondarkfantasy/mod_Planks.webp" alt="Деревянный пол в моде" loading="lazy" /><span class="ba__t ba__t--l">игра</span><span class="ba__t ba__t--r">мод</span><span class="ba__line"></span><input type="range" min="0" max="100" value="50" aria-label="Деревянный пол: сравнение" /></div><p class="cap">Деревянный пол · сливовые доски</p></div>
+        <div><div class="ba"><img src="assets/neondarkfantasy/orig_Plaster.webp" alt="Штукатурка в игре" loading="lazy" /><img class="ba__mod" src="assets/neondarkfantasy/mod_Plaster.webp" alt="Штукатурка в моде" loading="lazy" /><span class="ba__t ba__t--l">игра</span><span class="ba__t ba__t--r">мод</span><span class="ba__line"></span><input type="range" min="0" max="100" value="50" aria-label="Штукатурка: сравнение" /></div><p class="cap">Штукатурка · мох и зелёные швы</p></div>
+        <div><div class="ba"><img src="assets/neondarkfantasy/orig_Grass.webp" alt="Луг в игре" loading="lazy" /><img class="ba__mod" src="assets/neondarkfantasy/mod_Grass.webp" alt="Луг в моде" loading="lazy" /><span class="ba__t ba__t--l">игра</span><span class="ba__t ba__t--r">мод</span><span class="ba__line"></span><input type="range" min="0" max="100" value="50" aria-label="Луг: сравнение" /></div><p class="cap">Луг · тёмная кислотная слизь</p></div>
+        <div><div class="ba"><img src="assets/neondarkfantasy/orig_Dirt.webp" alt="Земля в игре" loading="lazy" /><img class="ba__mod" src="assets/neondarkfantasy/mod_Dirt.webp" alt="Земля в моде" loading="lazy" /><span class="ba__t ba__t--l">игра</span><span class="ba__t ba__t--r">мод</span><span class="ba__line"></span><input type="range" min="0" max="100" value="50" aria-label="Земля: сравнение" /></div><p class="cap">Земля · тропа из углей</p></div>
+        <div><div class="ba"><img src="assets/neondarkfantasy/orig_Bark.webp" alt="Кора в игре" loading="lazy" /><img class="ba__mod" src="assets/neondarkfantasy/mod_Bark.webp" alt="Кора в моде" loading="lazy" /><span class="ba__t ba__t--l">игра</span><span class="ba__t ba__t--r">мод</span><span class="ba__line"></span><input type="range" min="0" max="100" value="50" aria-label="Кора: сравнение" /></div><p class="cap">Кора · корявая фиолетовая</p></div>
+      </div>
+      <p class="note">Текстуры игры — собственность Scienart Games, показаны маленькими превью только для сравнения.</p>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       05 — НЕБО И ЗЕМЛЯ
+       ======================================================== -->
+  <section class="sec sec--sky" data-num="V">
+    <div class="container">
+      <div class="reveal">
+        <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-3.webp" alt="" />05 · Небо</p>
+        <h2 class="h2">Небо — главный герой</h2>
+        <p class="txt">Солнце и луну нарисовал Трифон. Мод почистил края, добавил ореол и маску свечения. Встроенные диски игры отключены: лица висят в небе всегда и не тонут в тумане у горизонта.</p>
+      </div>
+      <div class="sky reveal">
+        <figure><img src="assets/neondarkfantasy/sun.webp" alt="Солнце с лицом" loading="lazy" /><figcaption><b>Солнце</b><span>Огненные лучи-языки и лава в трещинах</span></figcaption></figure>
+        <figure><img src="assets/neondarkfantasy/moon.webp" alt="Луна с лицом" loading="lazy" /><figcaption><b>Луна</b><span>Звёздная ночь и кратеры, драгоценные зубы, огненный и ледяной глаз</span></figcaption></figure>
+      </div>
+
+      <div class="reveal" style="margin-top:90px">
+        <p class="lbl">05 · Версия 0.6</p>
+        <h2 class="h2">Мир, который мод строит сам</h2>
+      </div>
+      <div class="fx reveal">
+        <div class="panel"><img src="assets/neondarkfantasy/flower_clump.webp" alt="Куст светящихся цветов" loading="lazy" /><h3>Поля цветов</h3><p>Родная трава приглушена до 15%. По карте слоёв террейна мод расставляет светящиеся кусты чанками по 16 м вокруг игрока.</p></div>
+        <div class="panel"><img src="assets/neondarkfantasy/ember.webp" alt="Уголь" loading="lazy" style="height:90px;margin-top:30px;margin-bottom:44px" /><h3>Угли на тропах</h3><p>У террейна нет слота свечения, поэтому угли лежат поверх земли отдельной сеткой с аддитивным блендингом.</p></div>
+        <div class="panel"><img class="bolt" src="assets/neondarkfantasy/lightning.webp" alt="Молния" loading="lazy" /><h3>Молнии</h3><p>Каждые 7–20 секунд ночью: вспышка по рисунку из 8 кадров и короткая подсветка всего мира.</p></div>
+        <div class="panel"><img class="vortex" src="assets/neondarkfantasy/vortex.webp" alt="Звёздный вихрь" loading="lazy" /><h3>Звёздный вихрь</h3><p>Медленно вращается над миром, ночью ярче. Облака заменены на грозовые.</p></div>
+      </div>
+      <div class="code reveal">float wf = <span class="c">/* вес травы */</span>, we = <span class="c">/* вес песка/грязи */</span>;
+<span class="k">if</span> (we &gt; <span class="s">0.5f</span>)  AddFlat (embers,  x, y + <span class="s">0.04f</span>, z, size);   <span class="c">// уголь на тропе</span>
+<span class="k">else if</span> (wf &gt; <span class="s">0.45f</span>) AddCross(flowers, x, y, z, size);   <span class="c">// крест из двух плоскостей</span></div>
+      <div class="tex-grid reveal" style="grid-template-columns:repeat(2,1fr)">
+        <figure class="tex tex--emi" tabindex="0"><div class="tex__img" style="aspect-ratio:16/9"><img src="assets/neondarkfantasy/tex_path_embers.webp" alt="Тропа из углей" loading="lazy" /><img class="tex__emi" src="assets/neondarkfantasy/emi_path_embers.webp" alt="" loading="lazy" /><span class="tex__tag">маска свечения</span></div><figcaption><b>Тропа из углей</b><span>Яркость пришлось поднимать дважды: на первом проходе угли терялись</span></figcaption></figure>
+        <figure class="tex tex--emi" tabindex="0"><div class="tex__img" style="aspect-ratio:16/9"><img src="assets/neondarkfantasy/tex_flowers_bluestar.webp" alt="Ковёр синих цветов" loading="lazy" /><img class="tex__emi" src="assets/neondarkfantasy/emi_flowers_bluestar.webp" alt="" loading="lazy" /><span class="tex__tag">маска свечения</span></div><figcaption><b>Ковёр синих цветов</b><span>Самое сильное сияние даёт bloom в игре, поэтому в картинке его нет</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       06 — ВЕРСИИ
+       ======================================================== -->
+  <section class="sec sec--plain" data-num="VI">
+    <div class="container">
+      <div class="reveal">
+        <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-7.webp" alt="" />06 · Итерации</p>
+        <h2 class="h2">Семь версий за неделю</h2>
+        <p class="txt">Каждая версия — гипотеза, скриншоты из игры и разбор. Ошибки не скрыты: из них сложились правила стиля. Скриншоты открываются крупно по нажатию.</p>
+      </div>
+      <div class="reveal">
+        <div class="vtabs" role="tablist">
+          <button role="tab" class="is-on" data-v="1">0.1</button><button role="tab" data-v="2">0.2</button><button role="tab" data-v="3">0.3</button><button role="tab" data-v="4">0.4</button><button role="tab" data-v="5">0.5</button><button role="tab" data-v="6">0.6</button><button role="tab" data-v="7">0.7</button>
+        </div>
+
+        <div class="vpanel" data-p="1">
+          <h3>0.1 — первый запуск: красный монохром</h3>
+          <div class="vtri"><div class="panel ok"><b>Сработало</b><p>Текстуры, туман, свет и bloom заработали из одного плагина.</p></div><div class="panel bad"><b>Не сработало</b><p>Сливовое дерево, янтарный свет и повышенная насыщенность сложились в одну красную кашу, а улица утонула в сиреневой дымке.</p></div><div class="panel out"><b>Вывод</b><p>Оттенок света нельзя накладывать поверх цветных материалов вслепую.</p></div></div>
+          <div class="shots"><img src="assets/neondarkfantasy/shot_v01_0.webp" alt="Версия 0.1, интерьер" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v01_1.webp" alt="Версия 0.1, улица" loading="lazy" data-zoom /></div>
+        </div>
+        <div class="vpanel" data-p="2" hidden>
+          <h3>0.2 — первые свои текстуры</h3>
+          <div class="vtri"><div class="panel ok"><b>Сработало</b><p>Пол с циановыми швами и тропы с углями появились в игре.</p></div><div class="panel bad"><b>Не сработало</b><p>Свечение не включалось, часть подмен ушла не по тем именам, постобработка упала с ошибкой.</p></div><div class="panel out"><b>Вывод</b><p>Моддинг без точных имён из дампа — гадание. Отсюда дампер.</p></div></div>
+          <div class="shots"><img src="assets/neondarkfantasy/shot_v02_0.webp" alt="Версия 0.2" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v02_1.webp" alt="Версия 0.2" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v02_2.webp" alt="Версия 0.2" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v02_3.webp" alt="Версия 0.2" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v02_4.webp" alt="Версия 0.2" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v02_5.webp" alt="Версия 0.2" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v02_6.webp" alt="Версия 0.2" loading="lazy" data-zoom /></div>
+        </div>
+        <div class="vpanel" data-p="3" hidden>
+          <h3>0.3 — мир перекрашен целиком</h3>
+          <div class="vtri"><div class="panel ok"><b>Сработало</b><p>Мир впервые выглядит как другая игра: зелёные светящиеся стены, циановый пол в зале, лавовая кухня, тёплые фонари на улице.</p></div><div class="panel bad"><b>Не сработало</b><p>Неоновые края на каждой доске и балке. Глаз цепляется за каркас, а не за место.</p></div><div class="panel out"><b>Вывод</b><p>Когда светится всё, ничего не читается. Светиться должны только источники света, магия и тропы.</p></div></div>
+          <div class="shots"><img src="assets/neondarkfantasy/shot_v03_0.webp" alt="Версия 0.3" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v03_1.webp" alt="Версия 0.3" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v03_2.webp" alt="Версия 0.3" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v03_3.webp" alt="Версия 0.3" loading="lazy" data-zoom /></div>
+        </div>
+        <div class="vpanel" data-p="4" hidden>
+          <h3>0.4 — ближе к референсам</h3>
+          <div class="vtri"><div class="panel ok"><b>Сработало</b><p>Свечение только у источников, «хрустящая» фактура, синяя ночь, сплит-тонинг. Пол на кухне стал любимым элементом.</p></div><div class="panel bad"><b>Не сработало</b><p>Таверна внутри провалилась в темноту, свечи почти не давали света.</p></div><div class="panel out"><b>Вывод</b><p>Светлее делать за счёт новых источников, а не за счёт приглушения пола.</p></div></div>
+          <div class="shots"><img src="assets/neondarkfantasy/shot_v04_0.webp" alt="Версия 0.4" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v04_1.webp" alt="Версия 0.4" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v04_2.webp" alt="Версия 0.4" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v04_3.webp" alt="Версия 0.4" loading="lazy" data-zoom /></div>
+        </div>
+        <div class="vpanel" data-p="5" hidden>
+          <h3>0.5 — больше огня</h3>
+          <div class="vtri"><div class="panel ok"><b>Сработало</b><p>Свечи ярче, 60 новых тёплых ламп у люстр и подсвечников, вернулись зелёные стены снаружи. Внутри: моховая кладка, циановый пол у ёлки, лавовый у бара.</p></div><div class="panel bad"><b>Не сработало</b><p>Угли на тропе просвечивают сквозь синий слой, а не горят; трава и животные остаются чёрными силуэтами; грядки «загораются» с задержкой.</p></div><div class="panel out"><b>Вывод</b><p>Всё это стало списком задач для 0.6.</p></div></div>
+          <div class="shots"><img src="assets/neondarkfantasy/shot_v05_0.webp" alt="Версия 0.5" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v05_1.webp" alt="Версия 0.5" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v05_2.webp" alt="Версия 0.5" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v05_3.webp" alt="Версия 0.5" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v05_4.webp" alt="Версия 0.5" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v05_5.webp" alt="Версия 0.5" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v05_6.webp" alt="Версия 0.5" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/shot_v05_7.webp" alt="Версия 0.5" loading="lazy" data-zoom /></div>
+        </div>
+        <div class="vpanel" data-p="6" hidden>
+          <h3>0.6 — живой мир</h3>
+          <div class="vtri"><div class="panel ok"><b>Сделано</b><p>Цветы вместо травы, угли на тропах, молнии, звёздный вихрь, луна и солнце всегда видны. Синий перебор убран.</p></div><div class="panel bad"><b>Осталось</b><p>Атмосфера всё ещё держится на свечении и цветной заливке.</p></div><div class="panel out"><b>Вывод</b><p>Следующий шаг — фактура и направленный свет. Подробно — в разделе «Мир, который мод строит сам».</p></div></div>
+          <div class="shots"><img src="assets/neondarkfantasy/flower_glow.webp" alt="Спрайт цветка днём и ночью" loading="lazy" data-zoom /><img src="assets/neondarkfantasy/flower_sprite.webp" alt="Спрайт цветка" loading="lazy" data-zoom style="object-fit:contain;background:#05030a" /></div>
+        </div>
+        <div class="vpanel" data-p="7" hidden>
+          <h3>0.7 — рельеф и направленный свет</h3>
+          <div class="vtri"><div class="panel ok"><b>Сделано</b><p>У материалов три карты: цвет без запечённого света, рельеф и глянец. Эмбиент ниже, луна — холодный ключевой свет, тёплые точки ярче.</p></div><div class="panel bad"><b>Не проверено</b><p>Версия собрана, тест четырёх вариантов в игре ещё впереди. Вода не тронута.</p></div><div class="panel out"><b>Метод</b><p>Менять за раз одну группу признаков и записывать конкретную причину улучшения, а не «стало красивее».</p></div></div>
+          <div class="shots"><img src="assets/neondarkfantasy/v07_prev.webp" alt="Тест пустого угла: слева цвет, справа реакция на свет" loading="lazy" data-zoom style="object-fit:contain;background:#05030a" /></div>
+        </div>
+      </div>
+      <div class="panel turn ornate reveal">
+        <p style="margin-top:0"><b>Главный поворот.</b> До версии 0.6 атмосферу пытались собрать из свечения и цветной заливки. Итог работы: <em>атмосфера строится на фактуре и направленном свете</em> и должна читаться даже в пустом кадре. Свечение и ожившие предметы — только приправа.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       07 — СВЕТ
+       ======================================================== -->
+  <section class="sec sec--floor" data-num="VII">
+    <div class="container">
+      <div class="reveal">
+        <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-4.webp" alt="" />07 · Свет</p>
+        <h2 class="h2">Что светится, а что нет</h2>
+      </div>
+      <div class="three reveal">
+        <div class="panel"><h3 style="color:var(--candle)">Светится</h3><ul><li>фонари, свечи, люстры, факелы, окна</li><li>угли, лава, огонь</li><li>руны, кристаллы, зелья, порталы</li><li>цветы и грибы</li><li>глаза, лица луны и солнца, молнии</li></ul></div>
+        <div class="panel"><h3 style="color:var(--lav)">Только освещено</h3><ul><li>дерево: балки, мебель, бочки</li><li>камень, кладка, черепица, кора</li><li>ткань, кожа, металл, посуда</li><li>трава и листва</li><li>персонажи и животные — лёгкая самоподсветка, чтобы не уходить в черноту</li></ul></div>
+        <div class="panel"><h3>Что делает мод</h3><ul><li>перекрашивает туман и эмбиент с учётом времени суток</li><li>свечи светят ярче в 3,5 раза и дальше</li><li>до 60 тёплых ламп у люстр и подсвечников</li><li>bloom, контраст, сплит-тонинг: тени синие, света тёплые</li><li>F10 — сравнение «до / после»</li></ul></div>
+      </div>
+      <div class="panel reveal" style="margin-top:16px">
+        <h3>Значения стиля из гайда</h3>
+        <div class="tbl-wrap">
+          <table class="vals">
+            <tr><th>Параметр</th><th>Значение</th><th>Комментарий</th></tr>
+            <tr><td>Эмбиент ночью</td><td>0.42, 0.40, 0.56</td><td>Светлая лавандовая ночь</td></tr>
+            <tr><td>Эмбиент днём</td><td>0.74, 0.70, 0.84</td><td>Прохладный сиреневый день</td></tr>
+            <tr><td>Цвет тумана</td><td>0.20, 0.07, 0.32</td><td>Royal Violet, плотность ниже обычной</td></tr>
+            <tr><td>Лунный свет</td><td>0.82, 0.76, 1.0 × 2.2</td><td>Почти белый с лавандой</td></tr>
+            <tr><td>Свечи</td><td>1.0, 0.68, 0.38 × 3.5</td><td>Тёплый янтарь, увеличенный радиус</td></tr>
+            <tr><td>Bloom</td><td>0.9 · порог 1.0</td><td>Только яркие источники</td></tr>
+            <tr><td>Контраст / насыщенность</td><td>+22 / +12</td><td>Сочно, но не кислотно</td></tr>
+            <tr><td>Сплит-тонинг</td><td>тени 0.55, 0.50, 1</td><td>Холодные тени, тёплые света</td></tr>
+          </table>
+        </div>
+      </div>
+      <p class="note reveal">Исследование отдельно оговаривает: это сохранённые настройки конкретного подхода, а не универсальные эталонные значения для любой сцены.</p>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       08 — ВЕРСИЯ 0.7
+       ======================================================== -->
+  <section class="sec sec--stone" data-num="VIII">
+    <div class="container grid2">
+      <div class="reveal">
+        <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-8.webp" alt="" />08 · Версия 0.7</p>
+        <h2 class="h2">Один свет — разный рисунок бликов</h2>
+        <p class="txt">Раньше свет и блики были нарисованы прямо в картинке, поэтому настоящий свет игры ложился на камень и дерево одинаково плоско. В 0.7 у каждого материала три карты: <b>цвет</b> без запечённого света, <b>рельеф</b> и <b>глянец</b>. Камень — крупная неровная кладка, глубокие швы, короткие блики на выступах. Дерево — длинное текучее волокно и потёртый лак.</p>
+        <div class="toggle" role="group" aria-label="Карта материала">
+          <button type="button" class="is-on" data-map="color">Цвет</button>
+          <button type="button" data-map="normal">Рельеф</button>
+          <button type="button" data-map="gloss">Глянец</button>
+        </div>
+        <div class="maps" id="maps" data-mode="color">
+          <div><div class="map"><img class="m-color" src="assets/neondarkfantasy/v07_T_Stonewall_01_C.webp" alt="Камень: цвет" loading="lazy" /><img class="m-normal" src="assets/neondarkfantasy/v07_T_Stonewall_01_C_normal.webp" alt="Камень: рельеф" loading="lazy" /><img class="m-gloss" src="assets/neondarkfantasy/v07_T_Stonewall_01_C_gloss.webp" alt="Камень: глянец" loading="lazy" /></div><p class="cap">Камень</p></div>
+          <div><div class="map"><img class="m-color" src="assets/neondarkfantasy/v07_T_WoodPlanks_01_C1.webp" alt="Дерево: цвет" loading="lazy" /><img class="m-normal" src="assets/neondarkfantasy/v07_T_WoodPlanks_01_C1_normal.webp" alt="Дерево: рельеф" loading="lazy" /><img class="m-gloss" src="assets/neondarkfantasy/v07_T_WoodPlanks_01_C1_gloss.webp" alt="Дерево: глянец" loading="lazy" /></div><p class="cap">Дерево</p></div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="panel ornate">
+          <h3>Тест пустого угла</h3>
+          <p>Четыре варианта с одной камеры: угол таверны, где видно стену, балку и пол. Мод запоминает исходное состояние материалов и переключает его на лету, без перезапуска; режим подписывается в углу экрана, чтобы скриншоты не перепутались.</p>
+          <div class="tbl-wrap">
+            <table class="vals abcd">
+              <tr><th>Вариант</th><th>Текстуры · F6</th><th>Свет · F7</th></tr>
+              <tr><td>A</td><td>0.6</td><td>0.6</td></tr>
+              <tr><td>B</td><td class="r">0.7 рельеф</td><td>0.6</td></tr>
+              <tr><td>C</td><td>0.6</td><td class="d">0.7 направленный</td></tr>
+              <tr><td>D</td><td class="r">0.7 рельеф</td><td class="d">0.7 направленный</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h3>Что исследование советует проверять первым</h3>
+          <ul>
+            <li>отношения в кадре: главный объект, тихий фон, направление взгляда</li>
+            <li>материальность: у камня, дерева и ткани разный масштаб детали и блик</li>
+            <li>одна смысловая странность вместо глаз на каждом камне</li>
+            <li>связь источника с миром: цвет котла повторяется на ближайшей поверхности</li>
+            <li>движение и эффекты — только после того, как кадр читается сам</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       09 — ПРАВИЛА И ДАЛЬШЕ
+       ======================================================== -->
+  <section class="sec sec--wood" data-num="IX">
+    <div class="container">
+      <div class="reveal">
+        <p class="lbl lbl--mark"><img src="assets/neondarkfantasy/orn-mark-6.webp" alt="" />09 · Правила, выведенные на тестах</p>
+        <h2 class="h2">Делай / не делай</h2>
+      </div>
+      <div class="rules reveal">
+        <div class="panel do"><h3>Делай</h3><ul><li>Строй атмосферу фактурой и направленным светом: пустой кадр тоже должен работать</li><li>Свети только источниками, магией и важными тропами</li><li>Делай ночь синей и читаемой, а не чёрной</li><li>Держи пару «холодный мир + тёплые огни»</li><li>Освещай помещения множеством мелких тёплых источников</li><li>Давай камню, дереву и металлу разный рельеф и глянец</li><li>Внутри — тёплый янтарь, снаружи — зелёное сияние стен</li><li>Оставляй небу лица, грозы и вихри</li></ul></div>
+        <div class="panel dont"><h3>Не делай</h3><ul><li>Неоновые обводки на досках и мебели</li><li>Свечение всего подряд: глаз теряет главное</li><li>Монохромную заливку, которая съедает цвета материалов</li><li>Чёрные силуэты травы, людей и животных</li><li>Свет и блики, нарисованные прямо в текстуре</li><li>Сплошной красный интерьер</li><li>Пустое плоское небо</li><li>Bloom с низким порогом, заливающий пол-экрана</li></ul></div>
+      </div>
+
+      <div class="reveal" style="margin-top:90px">
+        <p class="lbl">09 · Дальше</p>
+        <h2 class="h2">Что впереди</h2>
+      </div>
+      <div class="three next reveal">
+        <div class="panel"><h3><em>I.</em>Довести мод</h3><p>Разобрать тест четырёх вариантов, вода с вытянутыми сиреневыми отражениями, одна доминанта у входа в таверну, своя музыка в главном меню.</p></div>
+        <div class="panel"><h3><em>II.</em>Ожившие предметы</h3><p>Как приправа к атмосфере: луна и солнце изредка моргают, вывеска таверны приоткрывает глаз.</p></div>
+        <div class="panel"><h3><em>III.</em>Стиль за пределами игры</h3><p>Брендбук стиля, 2D и 3D живые обои, интерактивный 3D-фон для сайта, бесплатный пак ассетов в эстетике Neon Dark Fantasy.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       СКАЧАТЬ
+       ======================================================== -->
+  <section class="sec sec--plain dl">
+    <div class="container reveal">
+      <img src="assets/neondarkfantasy/orn-divider.webp" alt="" style="width:min(460px,80%);margin:0 auto 26px" />
+      <p class="lbl">PDF · кейс</p>
+      <h2 class="h2">Полный кейс одним файлом</h2>
+      <p class="txt" style="margin:16px auto 0">24 страницы: концепция, палитра, текстуры, инженерия, все версии со скриншотами и правила. Облегчённая версия для экрана, 2,7 МБ.</p>
+      <a class="btn" href="assets/neondarkfantasy/Neon_Dark_Fantasy_Case.pdf" download="Neon_Dark_Fantasy_Case.pdf">↓ Скачать PDF</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div>
+        <p><b>Идея и арт-дирекшн — Трифон / WwolDEM. Код и процедурные текстуры — в паре с Claude (Anthropic).</b></p>
+        <p style="margin-top:6px">Мод — фанатский, некоммерческий, игра принадлежит Scienart Games.</p>
+      </div>
+      <a href="index.html">← Назад на WwolDEM</a>
+    </div>
+  </footer>
+
+  <div class="lb" id="lb" role="dialog" aria-label="Скриншот крупно"><img alt="" /></div>
+
+  <script>
+    'use strict';
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var finePointer = window.matchMedia('(pointer: fine)').matches;
+
+    // вступление: буквы заголовка, угольки, пропуск по клику или клавише
+    (function () {
+      var root = document.documentElement;
+      var h1 = document.querySelector('.hero h1');
+      var i = 0;
+      (function split(node) {
+        Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+          if (n.nodeType === 3) {
+            var frag = document.createDocumentFragment();
+            n.textContent.split('').forEach(function (c) {
+              var sp = document.createElement('span');
+              sp.className = 'ch';
+              sp.setAttribute('aria-hidden', 'true');
+              sp.style.setProperty('--i', c === ' ' ? i : i++);
+              sp.textContent = c;
+              frag.appendChild(sp);
+            });
+            node.replaceChild(frag, n);
+          } else if (n.nodeType === 1) {
+            split(n);
+          }
+        });
+      })(h1);
+      h1.classList.add('split');
+
+      var box = document.getElementById('embers');
+      if (box && !reduce) {
+        for (var k = 0; k < 22; k++) {
+          var e = document.createElement('i');
+          e.style.setProperty('--x', (Math.random() * 100).toFixed(1) + '%');
+          e.style.setProperty('--s', (2 + Math.random() * 4).toFixed(1) + 'px');
+          e.style.setProperty('--t', (7 + Math.random() * 8).toFixed(1) + 's');
+          e.style.setProperty('--d', (1.2 + Math.random() * 8).toFixed(1) + 's');
+          e.style.setProperty('--dx', (Math.random() * 120 - 60).toFixed(0) + 'px');
+          box.appendChild(e);
+        }
+      }
+
+      if (!root.classList.contains('intro')) return;
+      function finish() {
+        root.classList.remove('intro');
+        removeEventListener('pointerdown', finish);
+        removeEventListener('keydown', finish);
+      }
+      addEventListener('pointerdown', finish);
+      addEventListener('keydown', finish);
+      setTimeout(finish, 3400);
+    })();
+
+    // курсор-уголёк + координаты
+    (function () {
+      if (!finePointer || reduce) return;
+      var cur = document.getElementById('cursor');
+      var cx = document.getElementById('curX');
+      var cy = document.getElementById('curY');
+      cur.style.display = 'block';
+      addEventListener('mousemove', function (e) {
+        cur.style.transform = 'translate(' + e.clientX + 'px,' + e.clientY + 'px)';
+        cx.textContent = 'X: ' + e.clientX;
+        cy.textContent = 'Y: ' + e.clientY;
+        cur.classList.toggle('is-hover', !!e.target.closest('a, button, .tex--emi, .ba, [data-zoom]'));
+      });
+      document.addEventListener('mouseleave', function () { cur.style.opacity = '0'; });
+      document.addEventListener('mouseenter', function () { cur.style.opacity = ''; });
+    })();
+
+    // палитра: клик копирует HEX
+    document.querySelectorAll('.sw').forEach(function (sw) {
+      sw.addEventListener('click', function () {
+        var hex = sw.dataset.hex;
+        if (navigator.clipboard) navigator.clipboard.writeText(hex).catch(function () {});
+        var code = sw.querySelector('code');
+        code.textContent = 'скопировано';
+        sw.classList.add('copied');
+        setTimeout(function () { code.textContent = hex; sw.classList.remove('copied'); }, 1100);
+      });
+    });
+
+    // чисто / после грязи
+    (function () {
+      var grid = document.getElementById('dirtGrid');
+      document.querySelectorAll('[data-dirt]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          document.querySelectorAll('[data-dirt]').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          grid.classList.toggle('grimy', b.dataset.dirt === 'grimy');
+        });
+      });
+    })();
+
+    // было → стало
+    document.querySelectorAll('.ba input').forEach(function (inp) {
+      var box = inp.closest('.ba');
+      inp.addEventListener('input', function () { box.style.setProperty('--pos', inp.value + '%'); });
+    });
+
+    // вкладки версий
+    (function () {
+      var tabs = document.querySelectorAll('.vtabs button');
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function () {
+          tabs.forEach(function (x) { x.classList.toggle('is-on', x === t); x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
+          document.querySelectorAll('.vpanel').forEach(function (p) { p.hidden = p.dataset.p !== t.dataset.v; });
+        });
+      });
+    })();
+
+    // карты 0.7: цвет / рельеф / глянец
+    (function () {
+      var maps = document.getElementById('maps');
+      document.querySelectorAll('[data-map]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          document.querySelectorAll('[data-map]').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+          maps.dataset.mode = b.dataset.map;
+        });
+      });
+    })();
+
+    // скриншоты крупно
+    (function () {
+      var lb = document.getElementById('lb');
+      var img = lb.querySelector('img');
+      document.addEventListener('click', function (e) {
+        var z = e.target.closest('[data-zoom]');
+        if (z) { img.src = z.currentSrc || z.src; img.alt = z.alt; lb.classList.add('open'); return; }
+        if (e.target.closest('#lb')) lb.classList.remove('open');
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lb.classList.remove('open'); });
+    })();
+
+    // scroll-reveal + полосы шейдеров
+    (function () {
+      var items = document.querySelectorAll('.reveal, #bars');
+      if (reduce || !('IntersectionObserver' in window)) {
+        items.forEach(function (el) { el.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+        });
+      }, { threshold: 0.1 });
+      items.forEach(function (el) { io.observe(el); });
+    })();
+
+    // === PAGE TRANSITIONS ===
+    (function () {
+      var PAGE_COLORS = { 'index.html': '#0a0a0a', 'mindstack.html': '#0A0A0A', 'marathon.html': '#0A0A0A', 'paulrand.html': '#ffffff', 'museum.html': '#1B2A4A', 'trifonai.html': '#0a0c0a', 'library.html': '#0a0a0a', 'blaze.html': '#2B2B2B', 'neondarkfantasy.html': '#0B0714' };
+      var PAGE_ACCENT = { 'index.html': '#2ec796', 'mindstack.html': '#ffffff', 'marathon.html': '#FF6B00', 'paulrand.html': '#E8321A', 'museum.html': '#C9A84C', 'trifonai.html': '#39ff14', 'library.html': '#2ec796', 'blaze.html': '#D8452B', 'neondarkfantasy.html': '#E0A35A' };
+      var overlay = document.createElement('div');
+      overlay.className = 'transition-overlay';
+      overlay.style.background = '#0B0714';
+      document.body.appendChild(overlay);
+      var accentBar = document.createElement('div');
+      accentBar.style.cssText = ['position:absolute','bottom:0','left:0','width:0%','height:3px','background:#E0A35A','transition:width 0.4s ease'].join(';');
+      overlay.appendChild(accentBar);
+      document.addEventListener('click', function (e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        var href = link.getAttribute('href');
+        if (!href) return;
+        if (href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel') || link.hasAttribute('download') || link.getAttribute('target') === '_blank') return;
+        e.preventDefault();
+        var target = href.split('/').pop().split('?')[0] || 'index.html';
+        overlay.style.background = PAGE_COLORS[target] || '#0a0a0a';
+        accentBar.style.background = PAGE_ACCENT[target] || '#2ec796';
+        overlay.classList.add('active');
+        document.body.classList.add('page-exit');
+        requestAnimationFrame(function () { accentBar.style.width = '100%'; });
+        setTimeout(function () { window.location.href = href; }, 450);
+      });
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) { overlay.classList.remove('active'); accentBar.style.width = '0%'; document.body.classList.remove('page-exit'); }
+      });
+    })();
+
+    // отметка для MEMORY на главной: кейс пролистан до конца
+    (function () {
+      var page = (location.pathname.split('/').pop() || '').replace('.html', '');
+      if (!page) return;
+      var done = false;
+      window.addEventListener('scroll', function () {
+        if (done) return;
+        if ((window.scrollY + window.innerHeight) / document.body.scrollHeight > 0.95) {
+          done = true;
+          try {
+            var arr = JSON.parse(sessionStorage.getItem('memory-cases') || '[]');
+            if (arr.indexOf(page) === -1) {
+              arr.push(page);
+              sessionStorage.setItem('memory-cases', JSON.stringify(arr));
+            }
+          } catch (e) {}
+        }
+      }, { passive: true });
+    })();
+  </script>
+
+</body>
+</html>

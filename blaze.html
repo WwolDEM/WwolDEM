@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');</script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>blaze — Брендинг · WwolDEM</title>
   <meta property="og:title" content="blaze — брендинг | WwolDEM">
@@ -522,9 +523,46 @@
       .hero__inner > * { opacity: 1 !important; }
       .cursor { display: none !important; }
     }
+  
+    /* ============================================================
+       ВСТУПЛЕНИЕ (анимации ix-*: при клике, клавише или по таймеру доигрывают до конца)
+       ============================================================ */
+    .ix { display: none; }
+    html.intro .ix { display: block; position: fixed; inset: 0; z-index: 99998; pointer-events: none; }
+    html.intro-end .ix { display: none !important; }
+    @keyframes ix-up    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+    /* без «to»: элемент проявляется до своей родной прозрачности (паттерн, фоновые надписи), а не до 1 */
+    @keyframes ix-fade  { from { opacity: 0; } }
+    @keyframes ix-blur  { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: none; } }
+    @keyframes ix-navin { from { transform: translateY(-100%); } to { transform: none; } }
+    @keyframes ix-out   { to { opacity: 0; } }
+
+    /* blaze: красная метка красится на «коре», кора расходится, лес проступает из тумана */
+    .ix-half { position: absolute; top: 0; bottom: 0; width: 50.5%; background: var(--bark-deep); }
+    .ix-half--l { left: 0; } .ix-half--r { right: 0; }
+    .ix-mark { position: absolute; left: 50%; top: 27vh; width: 46px; height: 46vh; margin-left: -23px; background: var(--mark); transform-origin: top; }
+    html.intro .ix-half--l { animation: ix-bz-l 1s cubic-bezier(.7,0,.2,1) .75s both; }
+    html.intro .ix-half--r { animation: ix-bz-r 1s cubic-bezier(.7,0,.2,1) .75s both; }
+    html.intro .ix-mark { animation: ix-bz-mark 1.45s cubic-bezier(.6,0,.2,1) .05s both; }
+    @keyframes ix-bz-l { to { transform: translateX(-101%); } }
+    @keyframes ix-bz-r { to { transform: translateX(101%); } }
+    @keyframes ix-bz-mark { 0% { transform: scaleY(0); } 40% { transform: scaleY(1); } 55% { transform: scaleY(1); opacity: 1; } 100% { transform: scale(.3, .1); opacity: 0; } }
+    @keyframes ix-bz-fog { from { filter: blur(14px) brightness(1.6) saturate(.2); transform: scale(1.08); } to { filter: none; transform: none; } }
+    @keyframes ix-bz-paint { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    html.intro .hero__photo { animation: ix-bz-fog 2.6s cubic-bezier(.22,1,.36,1) .6s both; }
+    html.intro .hero__inner > *:nth-child(1) { animation: ix-up .6s ease 1.3s both; }
+    html.intro .hero__inner > *:nth-child(2) { animation: ix-blur 1s ease 1.15s both; }
+    html.intro .hero__inner > *:nth-child(3) { animation: ix-up .7s ease 1.6s both; }
+    html.intro .hero__inner > *:nth-child(4) { animation: ix-bz-paint .6s cubic-bezier(.7,0,.2,1) 1.95s both; transform-origin: top; opacity: 1; }
+    html.intro .hero__inner > *:nth-child(5) { animation: ix-up .6s ease 2.15s both; }
+    html.intro .hero__scroll { animation: ix-fade .8s ease 2.4s both, bob 2s ease-in-out 3.2s infinite; }
+    html.intro .nav { animation: ix-navin .7s cubic-bezier(.22,1,.36,1) 1.4s both; }
+    @media (max-width: 768px) { .ix-mark { width: 30px; margin-left: -15px; } }
   </style>
 </head>
 <body>
+
+  <div class="ix" aria-hidden="true"><i class="ix-half ix-half--l"></i><i class="ix-half ix-half--r"></i><i class="ix-mark"></i></div>
 
   <!-- общий символ логотипа: буквы — currentColor, метка l — красная (или currentColor в .logo--mono) -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -561,7 +599,7 @@
        ======================================================== -->
   <nav class="nav">
     <div class="container nav__inner">
-      <a href="index.html">← WwolDEM</a>
+      <a href="index.html#works">← WwolDEM</a>
       <div class="nav__center">blaze · мини-брендбук</div>
       <div class="nav__status"><span class="dot">▌</span> БРЕНДИНГ · 2026</div>
     </div>
@@ -1132,6 +1170,32 @@
           } catch (e) {}
         }
       }, { passive: true });
+    })();
+  </script>
+
+
+  <script>
+    // вступление: клик, клавиша или таймер — и все анимации ix-* доигрывают до конца
+    (function () {
+      var root = document.documentElement;
+
+      if (!root.classList.contains('intro')) return;
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        document.getAnimations().forEach(function (a) {
+          if ((a.animationName || '').indexOf('ix-') === 0) { try { a.finish(); } catch (e) {} }
+        });
+
+        root.classList.add('intro-end');
+        document.dispatchEvent(new Event('intro:done'));
+        removeEventListener('pointerdown', finish);
+        removeEventListener('keydown', finish);
+      }
+      addEventListener('pointerdown', finish);
+      addEventListener('keydown', finish);
+      setTimeout(finish, 3200);
     })();
   </script>
 
